@@ -1,0 +1,108 @@
+.card {
+    border-radius: 0;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.navbar {
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.result-table th {
+    background-color: #f8f9fa;
+}
+
+.student-info {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+.badge {
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.result-summary .badge {
+    font-size: 1em;
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.15);
+    border-color: #0d6efd;
+}
+
+.grade-badge {
+    width: 35px;
+    display: inline-block;
+    text-align: center;
+}
+
+.result-header {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Print Styles */
+@media print {
+    /* Hide unnecessary elements when printing */
+    nav,
+    #resultForm,
+    .print-btn {
+        display: none !important;
+    }
+
+    /* Reset background colors for better printing */
+    body {
+        background: white !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+
+    /* Ensure table fits on the page */
+    .table {
+        font-size: 12pt;
+    }
+
+    /* Preserve background colors for grade badges */
+    .grade-badge {
+        border: 1px solid #000;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* Add page break rules */
+    .card {
+        break-inside: avoid;
+    }
+
+    /* Add header information */
+    @page {
+        margin: 2cm;
+    }
+
+    /* Add a watermark */
+    .result-header::after {
+        content: "Official Result";
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 4em;
+        color: rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+}

@@ -1,2 +1,2 @@
-# RMU-Result-Mannagement-System
+# Result-Mannagement-System
  

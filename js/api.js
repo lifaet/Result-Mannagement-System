@@ -11,7 +11,7 @@ function doGet(e) {
           error: 'Missing required parameters',
           required: {
             id: 'Student ID (format: H22020101)',
-            semester: 'Semester code (format: 2025_01)'
+            semester: 'Semester code (format: 1/1, 1/2, 2/1, etc.)'
           }
         });
       }

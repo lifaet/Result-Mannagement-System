@@ -15,6 +15,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             showLoading();
+            
+            // Add delay before scrolling for better UX
+            setTimeout(() => {
+                window.scrollTo({
+                    top: resultDisplay.offsetTop - 20,
+                    behavior: 'smooth'
+                });
+            }, 100);
+
             const response = await fetch(`${u+r+a+p+i+l}?id=${studentId}&semester=${semester}`);
             const result = await response.json();
 
@@ -92,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         document.getElementById('resultDisplay').innerHTML = html;
+        
     }
 
     function showLoading() {

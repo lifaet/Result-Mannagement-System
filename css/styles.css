@@ -26,7 +26,7 @@ body {
 
 /* Header Styles */
 .site-header {
-    padding: 0.75rem;
+    padding: 0.5rem;
     background: #fff;
     border-bottom: 1px solid var(--border-color);
 }
@@ -44,8 +44,19 @@ body {
 }
 
 .logo {
-    height: 50px;  /* Reduced from 60px */
+    height: 50px;
     width: auto;
+}
+
+/* Announcement */
+.announcement {
+    padding-top: 0.5rem;
+    text-align: center;
+}
+
+.announcement p {
+    font-size: 0.9rem;
+    color: #666;
 }
 
 /* Main Content */
@@ -58,37 +69,34 @@ body {
 }
 
 /* Search Form */
-.search-container {
-    max-width: 600px;  /* Reduced from 800px */
+.search-form {
+    max-width: 600px;
     margin: 0 auto;
     padding: 1.5rem;
     background: #fff;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.search-form {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-bottom: 1rem;  /* Reduced from 1.5rem */
+    margin-bottom: 1rem;
 }
 
 label {
     font-weight: 500;
     font-size: 0.9rem;
-    margin-bottom: 0.25rem;
 }
 
 input, select {
-    padding: 0.5rem;  /* Reduced from 0.75rem */
-    border: 2px solid var(--border-color);
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 0.9rem;
     transition: border-color 0.2s;
@@ -99,153 +107,13 @@ input:focus, select:focus {
     border-color: var(--primary-color);
 }
 
-.input-hint {
-    font-size: 0.8rem;
-    color: #666;
-}
-
 .submit-btn {
     padding: 0.75rem;
     background: var(--primary-color);
     color: #fff;
     border: none;
     border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.submit-btn:hover {
-    opacity: 0.9;
-}
-
-/* Result Container - Letter Size Paper */
-.result-container {
-    max-width: 700px;  /* Reduced from 800px */
-    min-height: 27.94cm;
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background: #fff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Loading Animation */
-.spinner {
-    animation: rotate 1s linear infinite;
-    width: 20px;
-    height: 20px;
-}
-
-@keyframes rotate {
-    100% { transform: rotate(360deg); }
-}
-
-/* Print Styles */
-@media print {
-    body {
-        background: #fff;
-    }
-    
-    .site-header,
-    .search-container,
-    .site-footer {
-        display: none;
-    }
-
-    .result-container {
-        margin: 0;
-        padding: 0;
-        box-shadow: none;
-    }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .search-container {
-        padding: 1rem;
-    }
-
-    .header-content {
-        flex-direction: column;
-        text-align: center;
-    }
-}
-
-/* Page Layout */
-.page-wrapper {
-    min-height: 100vh;
-    padding: 2rem;
-}
-
-/* Search Container */
-.search-container {
-    max-width: 600px;  /* Reduced from 800px */
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.page-title {
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 2rem;
-    font-weight: 600;
-}
-
-/* Form Styles */
-.search-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;  /* Reduced from 1.5rem */
-}
-
-label {
-    font-weight: 500;
-    color: #555;
     font-size: 0.9rem;
-    margin-bottom: 0.25rem;
-}
-
-input, select {
-    padding: 0.5rem;  /* Reduced from 0.75rem */
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-}
-
-input:focus, select:focus {
-    outline: none;
-    border-color: #666;
-}
-
-.submit-btn {
-    padding: 0.75rem;
-    background: #000;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
     cursor: pointer;
     transition: opacity 0.2s;
 }
@@ -254,490 +122,20 @@ input:focus, select:focus {
     opacity: 0.9;
 }
 
-/* Result Display */
-.result-container {
-    max-width: 700px;  /* Reduced from 800px */
-    min-height: 29.7cm; /* A4 height */
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.result-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #000;
-}
-
-.student-info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.info-item {
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.result-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 2rem 0;
-}
-
-.result-table th,
-.result-table td {
-    padding: 0.75rem;
-    text-align: left;
-    border: 1px solid #ddd;
-}
-
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    #resultDisplay, #resultDisplay * {
-        visibility: visible;
-    }
-    #resultDisplay {
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-    .print-btn {
-        display: none !important;
-    }
-    .page-wrapper {
-        padding: 0;
-    }
-    .search-container {
-        display: none;
-    }
-    .result-container {
-        box-shadow: none;
-        margin: 0;
-        padding: 2.54cm;
-    }
-}
-
-.grade-badge {
-    min-width: 35px;
-    display: inline-block;
-}
-
-.result-header {
-    padding: 1rem;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.invalid-feedback {
-    display: none;
-    font-size: 0.875em;
-    color: #dc3545;
-}
-
-input:invalid ~ .invalid-feedback {
-    display: block;
-}
-
-.result-card {
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-}
-
-.result-info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.info-item {
-    padding: 0.5rem;
-    background-color: #f8f9fa;
-    border-radius: 0.25rem;
-}
-
-.grade-badge {
-    font-size: 0.9rem;
-    padding: 0.35rem 0.65rem;
-}
-
-@media print {
-    .result-card {
-        border: none !important;
-    }
-}
-
-@media screen and (max-width: 600px) {
-    .page-wrapper {
-        padding: 1rem;
-    }
-    .search-container {
-        padding: 1rem;
-        margin: 1rem auto;
-    }
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Result Display Styles */
-.result-container {
-    max-width: 700px;
-    margin: 2rem auto;
-    padding: 1rem;
-    background: #fff;
-    border: 1px solid #ddd;
-}
-
-.result-header {
-    text-align: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #ddd;
-}
-
-.result-logo {
-    height: 50px;
-    margin-bottom: 0.5rem;
-}
-
-.header-text h1 {
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
-}
-
-.header-text h2 {
-    font-size: 1.1rem;
-    margin-bottom: 0.25rem;
-}
-
-.header-text h3 {
-    font-size: 1rem;
-}
-
-.student-info-table {
-    width: 100%;
-    margin: 1rem 0;
-    border-collapse: collapse;
-}
-
-.student-info-table td {
-    padding: 0.4rem 0.5rem;
-    border-bottom: 1px dotted #ddd;
-    font-size: 0.9rem;
-}
-
-.student-info-table td:first-child {
-    font-weight: 500;
-    width: 150px;
-}
-
-.grade-sheet-title {
-    text-align: center;
-    margin: 1rem 0;
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-.grade-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0;
-}
-
-.grade-table th,
-.grade-table td {
-    padding: 0.4rem 0.5rem;
-    border: 1px solid #ddd;
-    font-size: 0.9rem;
-}
-
-.grade-table th:last-child,
-.grade-table td:last-child {
-    text-align: center;
-    width: 80px;
-}
-
-.print-button {
-    display: block;
-    width: 100px;
-    margin: 1rem auto;
-    padding: 0.4rem;
-    background: #666;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85rem;
-}
-
-@media print {
-    @page {
-        margin: 0.5cm;
-    }
-
-    .result-container {
-        margin: 0;
-        padding: 0;
-        border: none;
-        box-shadow: none;
-    }
-
-    .result-header {
-        margin-bottom: 1rem;
-    }
-
-    .student-info-table,
-    .grade-table {
-        page-break-inside: avoid;
-    }
-
-    .print-button {
-        display: none;
-    }
-}
-
-/* Result Display Styles */
-.result-container {
-    max-width: 700px;  /* Reduced from 800px */
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background: #fff;
-    border: 1px solid #ddd;
-}
-
-.student-info-table {
-    width: 100%;
-    margin-bottom: 1.5rem;
-    border-collapse: collapse;
-}
-
-.student-info-table td {
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px dotted #ddd;
-    font-size: 0.9rem;
-}
-
-.student-info-table td:first-child {
-    font-weight: 500;
-    width: 200px;
-}
-
-.grade-sheet-title {
-    text-align: center;
-    margin: 1rem 0;
-    font-size: 1.1rem;
-    font-weight: 500;
-}
-
-.grade-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 2rem;
-}
-
-.grade-table th,
-.grade-table td {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #ddd;
-    text-align: left;
-    font-size: 0.9rem;
-}
-
-.grade-table th:last-child,
-.grade-table td:last-child {
-    text-align: center;
-    width: 100px;
-}
-
-.print-button {
-    display: block;
-    width: 120px;
-    margin: 2rem auto;
-    padding: 0.5rem 1rem;
-    background: #666;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    margin-top: 1rem;
-}
-
-@media print {
-    .search-container,
-    .print-button {
-        display: none;
-    }
-
-    .result-container {
-        margin: 0;
-        padding: 0;
-        border: none;
-    }
-}
-
-.result-logo {
-    height: 50px;  /* Reduced from 60px */
-    margin-bottom: 1rem;
-}
-
-.header-text h1 {
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
-}
-
-.header-text h2 {
-    font-size: 1.1rem;
-    margin-bottom: 0.25rem;
-}
-
-.header-text h3 {
-    font-size: 1rem;
-}
-
-@media print {
-    .result-container {
-        padding: 1.5cm;  /* Adjusted for better print margins */
-    }
-
-    .result-header {
-        margin-bottom: 3rem;
-    }
-}
-
-/* Print Layout Styles */
-@page {
-    size: letter;
-    margin: 0.5in;
-}
-
-@media print {
-    body {
-        margin: 0;
-        padding: 0;
-        background: white;
-    }
-
-    .site-header, 
-    .search-container,
-    .site-footer,
-    .print-button {
-        display: none;
-    }
-
-    .result-container {
-        width: 8.5in;
-        min-height: 11in;
-        margin: 0;
-        padding: 0;
-        box-shadow: none;
-        border: none;
-    }
-
-    .result-header {
-        margin-bottom: 1.5rem;
-        padding: 1rem 0;
-    }
-
-    .result-logo {
-        height: 50px;  /* Reduced from 60px */
-    }
-
-    .header-text h1 {
-        font-size: 1.25rem;
-        margin: 10px 0;
-    }
-
-    .header-text h2 {
-        font-size: 1.1rem;
-        margin: 5px 0;
-    }
-
-    .header-text h3 {
-        font-size: 1rem;
-        margin: 5px 0;
-    }
-
-    .student-info-table {
-        width: 100%;
-        margin: 1rem 0;
-    }
-
-    .student-info-table td {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.9rem;
-    }
-
-    .grade-sheet-title {
-        font-size: 1.1rem;
-        margin: 1rem 0;
-    }
-
-    .grade-table {
-        width: 100%;
-        margin: 1rem 0;
-    }
-
-    .grade-table th,
-    .grade-table td {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.9rem;
-    }
-
-    /* Force page breaks */
-    .result-container {
-        page-break-after: always;
-    }
-
-    /* Prevent unwanted breaks */
-    .student-info-table,
-    .grade-table {
-        page-break-inside: avoid;
-    }
-}
-
-/* Add/Update Footer Styles */
-.site-footer {
-    text-align: center;
-    padding: 1rem;
-    margin-top: auto;
-    border-top: 1px solid #ddd;
-}
-
-/* Hide footer when printing */
-@media print {
-    .site-footer {
-        display: none;
-    }
-}
-
-/* Loading Screen Styles */
+/* Loading States */
 .loading-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 200px;  /* Reduced from 300px */
+    min-height: 200px;
     padding: 2rem;
 }
 
-.loading-content {
-    text-align: center;
-}
-
 .loading-spinner {
-    width: 40px;  /* Reduced from 50px */
+    width: 40px;
     height: 40px;
-    border: 4px solid #f3f3f3;  /* Reduced from 5px */
-    border-top: 4px solid #333;  /* Reduced from 5px */
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #333;
     border-radius: 50%;
     margin: 0 auto 1rem;
     animation: spin 1s linear infinite;
@@ -746,12 +144,11 @@ input:invalid ~ .invalid-feedback {
 .loading-text {
     font-size: 1rem;
     margin-bottom: 0.5rem;
-    color: #333;
 }
 
 .loading-message {
-    color: #666;
     font-size: 0.85rem;
+    color: #666;
 }
 
 @keyframes spin {
@@ -759,120 +156,59 @@ input:invalid ~ .invalid-feedback {
     100% { transform: rotate(360deg); }
 }
 
-/* Result Container - Hide borders when empty */
-.result-container:empty {
+/* Result Display */
+#resultDisplay:empty {
     display: none;
 }
 
-/* Loading state container */
-.loading-container {
-    min-height: 200px;  /* Reduced from 300px */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #fff;
-    border: none;
-    box-shadow: none;
-}
-
-/* Error state container */
-.alert {
-    padding: 1rem;
-    border-radius: 4px;
-    margin: 1rem 0;
-    background: #fff;
-    border: 1px solid #dc3545;
-    color: #dc3545;
-}
-
-/* Result Container - Only show when has content */
-.result-container:not(:empty) {
-    max-width: 700px;  /* Reduced from 800px */
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Print styles update */
-@media print {
-    .result-container:not(:empty) {
-        border: none;
-        box-shadow: none;
-        margin: 0;
-        padding: 0;
-    }
-}
-
-.announcement {
-    text-align: center;
-    padding: 0.75rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #ddd;
-}
-
-.announcement h3 {
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
-    color: #333;
-}
-
-.announcement p {
-    font-size: 0.9rem;
-    color: #666;
-    margin: 0;
-}
-
-/* Result Display Styles */
-.result-container:empty {
-    display: none;
-}
-
-.result-container:not(:empty) {
+.result-container {
     max-width: 700px;
     margin: 2rem auto;
-    padding: 1.5rem;
+    padding: 1rem;
     background: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
 }
 
 .result-header {
     text-align: center;
-    margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .result-logo {
-    height: 50px;
-    margin-bottom: 0.5rem;
+    height: 60px;
+    margin-bottom: 0.2rem;
 }
 
 .header-text h1 {
     font-size: 1.25rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
+}
+
+.header-text {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
 }
 
 .header-text h2 {
     font-size: 1.1rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
 }
 
 .header-text h3 {
     font-size: 1rem;
+    
 }
 
+/* Result Tables */
 .student-info-table {
     width: 100%;
-    margin: 1rem 0;
     border-collapse: collapse;
 }
 
 .student-info-table td {
     padding: 0.4rem 0.5rem;
-    border-bottom: 1px dotted #ddd;
+    border-bottom: 1px dotted var(--border-color);
     font-size: 0.9rem;
 }
 
@@ -897,7 +233,7 @@ input:invalid ~ .invalid-feedback {
 .grade-table th,
 .grade-table td {
     padding: 0.4rem 0.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     font-size: 0.9rem;
 }
 
@@ -920,7 +256,15 @@ input:invalid ~ .invalid-feedback {
     font-size: 0.85rem;
 }
 
-/* Print Layout Styles */
+/* Footer */
+.site-footer {
+    text-align: center;
+    padding: 1rem;
+    margin-top: auto;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Print Styles */
 @page {
     size: letter;
     margin: 0.5in;
@@ -931,27 +275,83 @@ input:invalid ~ .invalid-feedback {
         margin: 0;
         padding: 0;
         background: white;
+        min-height: 0; /* Remove full viewport height */
     }
 
     .site-header, 
-    .search-container,
+    .announcement,
+    .search-form,
     .site-footer,
     .print-button {
         display: none;
     }
 
     .result-container {
-        width: 8.5in;
-        min-height: 11in;
+        max-width: 100%;
+        width: auto;
         margin: 0;
-        padding: 0;
+        padding: 1rem;
         box-shadow: none;
         border: none;
+        min-height: auto; /* Remove fixed height */
     }
 
-    /* Prevent unwanted breaks */
+    .result-header {
+        margin-bottom: 1rem;
+    }
+
+    .result-logo {
+        height: 60px;
+    }
+
+    .header-text h1 {
+        font-size: 1.25rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .header-text h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .header-text h3 {
+        font-size: 1rem;
+    }
+
+    .student-info-table {
+        margin: 1rem 0;
+    }
+
+    .student-info-table td {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .grade-table {
+        margin: 1rem 0;
+    }
+
+    .grade-table th,
+    .grade-table td {
+        padding: 0.4rem 0.5rem;
+    }
+
+    /* Prevent page breaks inside elements */
+    .result-header,
     .student-info-table,
     .grade-table {
         page-break-inside: avoid;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .search-form {
+        padding: 1rem;
+        margin: 1rem;
     }
 }

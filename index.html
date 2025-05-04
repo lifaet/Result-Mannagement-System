@@ -1,35 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RMU Result Management System</title>
     <link rel="stylesheet" href="./css/styles.css">
 </head>
+
 <body>
-    <header class="site-header">
+    <section class="site-header">
         <div class="header-content">
             <img src="https://rmu.ac.bd/wp-content/uploads/2023/04/logo-80.jpg" alt="RMU Logo" class="logo">
             <h2>RESULT PUBLICATION SYSTEM OF RMU</h2>
         </div>
-    </header>
+    </section>
+    <section class="announcement">
+        <h4>ANNOUNCEMENT</h4>
+        <p>The results for Semester Final Examination 2025-01 are now available.</p>
+    </section>
+    <section class="main-content">
 
-    <div class="announcement">
-        <h3>ANNOUNCEMENT</h3>
-        <p>The results for Semester Final Examination 2025 are now available.</p>
-    </div>
-
-    <main class="main-content">
         <div class="search-container">
             <form id="resultForm" class="search-form">
                 <div class="form-group">
                     <label for="studentId">Student ID</label>
-                    <input type="text" 
-                           id="studentId"
-                           placeholder="Example: H22020101"
-                           title="ID must start with H followed by 7 digits"
-                           required>
-                    <div class="input-hint">Enter your student ID (e.g., H22020101)</div>
+                    <input type="text" id="studentId" placeholder="Example: H22020101"
+                        title="ID must start with H followed by 7 digits" required>
                 </div>
 
                 <div class="form-group">
@@ -58,8 +55,8 @@
             </form>
         </div>
 
-        <div id="resultDisplay" class="result-container"></div>
-    </main>
+        <div id="resultDisplay"></div>
+    </section>
 
     <footer class="site-footer">
         <p>&copy; 2025 Rabindra Maitree University</p>
@@ -67,4 +64,5 @@
 
     <script src="./js/main.js"></script>
 </body>
+
 </html>

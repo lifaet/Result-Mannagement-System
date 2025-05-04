@@ -1,8 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     const resultForm = document.getElementById('resultForm');
     const resultDisplay = document.getElementById('resultDisplay');
-    const API_URL = 'https://script.google.com/macros/s/AKfycbw4UAGT8Uv9fl_5Si9loLqEfR8gPjXvq9uDx8LSElOl5KZMf3K7xySY7gWG88uzbDkLpg/exec';
-
+    const p = "-IBUb6wQNR4FaSzG34raX-s2b5RJl";
+    const a =  "AKfycbwHtIzZZFFCtrt7gHcx1cYYxYB";
+    const i = "-k-f7eso6zhejA";
+    const u = "https://script.google.com";
+    const r = "/macros/s/";
+    const l = "/exec";
+    
     resultForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         const studentId = document.getElementById('studentId').value.trim().toUpperCase();
@@ -10,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             showLoading();
-            const response = await fetch(`${API_URL}?id=${studentId}&semester=${semester}`);
+            const response = await fetch(`${u+r+a+p+i+l}?id=${studentId}&semester=${semester}`);
             const result = await response.json();
 
             if (result.status === 'error') {
@@ -26,45 +31,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showResult(data) {
         const html = `
-            <div class="card">
-                <div class="result-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5>${data.name}</h5>
-                        <button class="btn btn-sm btn-outline-primary print-btn" onclick="window.print()">
-                            <i class="bi bi-printer"></i> Print Result
-                        </button>
-                    </div>
-                    <div class="mt-2">
-                        <div><strong>Student ID:</strong> ${data.id}</div>
-                        <div><strong>Department:</strong> ${data.department}</div>
-                    </div>
+            <div class="card result-card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Result Information</h5>
+                    <button class="btn btn-sm btn-outline-light print-btn" onclick="window.print()">
+                        <i class="bi bi-printer"></i> Print
+                    </button>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
+                <div class="card-body">
+                    <div class="result-info">
+                        <div class="info-item">
+                            <strong>Student ID:</strong> ${data.id}
+                        </div>
+                        <div class="info-item">
+                            <strong>Name:</strong> ${data.name}
+                        </div>
+                        <div class="info-item">
+                            <strong>Department:</strong> ${data.department}
+                        </div>
+                        <div class="info-item">
+                            <strong>Credits:</strong> ${data.credits}
+                        </div>
+                        <div class="info-item">
+                            <strong>Letter Grade:</strong> ${data.letterGrade}
+                        </div>
+                        <div class="info-item">
+                            <strong>CGPA:</strong> ${data.cgpa}
+                        </div>
+                    </div>
+                    
+                    <div class="alert ${data.result === 'Promoted' ? 'alert-success' : 'alert-danger'} text-center">
+                        <strong>Result Status:</strong> ${data.result}
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Subject</th>
-                                    <th>Grade</th>
+                                    <th class="text-center">Grade</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${data.subjects.map(subject => `
                                     <tr>
                                         <td>${subject.name}</td>
-                                        <td><span class="badge ${getGradeColor(subject.grade)} grade-badge">${subject.grade}</span></td>
+                                        <td class="text-center">
+                                            <span class="badge ${getGradeColor(subject.grade)} grade-badge">
+                                                ${subject.grade}
+                                            </span>
+                                        </td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
-                    </div>
-                </div>
-                <div class="card-footer d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>Credits:</strong> ${data.credits}
-                    </div>
-                    <div>
-                        <strong>CGPA:</strong> ${data.cgpa} (${data.letterGrade})
                     </div>
                 </div>
             </div>
@@ -74,10 +94,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getGradeColor(grade) {
-        if (grade.startsWith('A')) return 'bg-success';
-        if (grade.startsWith('B')) return 'bg-primary';
-        if (grade.startsWith('C')) return 'bg-warning';
-        return 'bg-danger';
+        switch(grade[0]) {
+            case 'A': return 'bg-success';
+            case 'B': return 'bg-primary';
+            case 'C': return 'bg-warning';
+            default: return 'bg-danger';
+        }
     }
 
     function showLoading() {

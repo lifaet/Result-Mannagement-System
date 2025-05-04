@@ -104,18 +104,3 @@ function doGet(e) {
     return ContentService.createTextOutput(JSON.stringify(response, null, 2))
       .setMimeType(ContentService.MimeType.JSON);
   }
-  
-  /**
-   * Test function to verify setup
-   */
-  function testSetup() {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheets = ss.getSheets();
-    
-    Logger.log('Available sheets:');
-    sheets.forEach(sheet => {
-      const name = sheet.getName();
-      const data = sheet.getDataRange().getValues();
-      Logger.log(`Sheet: ${name}, Rows: ${data.length}, Columns: ${data[0].length}`);
-    });
-  }

@@ -3,56 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result Management System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <title>RMU Result Management System</title>
+    <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <h2 class="text-center mb-4">Result Management System</h2>
-                
-                <!-- Result Form -->
-                <form id="resultForm" class="card p-4 shadow-sm">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="studentId" class="form-label">Student ID</label>
-                            <input type="text" class="form-control" id="studentId" 
-                                   placeholder="Example: H22020101"
-                                   required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="semester" class="form-label">Semester</label>
-                            <select class="form-select" id="semester" required>
-                                <option value="">Select Semester</option>
-                                <option value="1/1">1/1</option>
-                                <option value="1/2">1/2</option>
-                                <option value="2/1">2/1</option>
-                                <option value="2/2">2/2</option>
-                                <option value="3/1">3/1</option>
-                                <option value="3/2">3/2</option>
-                                <option value="4/1">4/1</option>
-                                <option value="4/2">4/2</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary w-100">
-                                Check Result
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- Result Display -->
-                <div id="resultDisplay" class="mt-4">
-                    <!-- Content will be populated by JavaScript -->
-                </div>
-            </div>
+    <header class="site-header">
+        <div class="header-content">
+            <img src="https://rmu.ac.bd/wp-content/uploads/2023/04/logo-80.jpg" alt="RMU Logo" class="logo">
+            <h1>Result Management System</h1>
         </div>
-    </div>
+    </header>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <main class="main-content">
+        <div class="search-container">
+            <form id="resultForm" class="search-form">
+                <div class="form-group">
+                    <label for="studentId">Student ID</label>
+                    <input type="text" 
+                           id="studentId"
+                           placeholder="Example: H22020101"
+                           title="ID must start with H followed by 7 digits"
+                           required>
+                    <div class="input-hint">Enter your student ID (e.g., H22020101)</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="semester">Semester</label>
+                    <select id="semester" required>
+                        <option value="">Select Semester</option>
+                        <option value="1/1">1st Year 1st Semester</option>
+                        <option value="1/2">1st Year 2nd Semester</option>
+                        <option value="2/1">2nd Year 1st Semester</option>
+                        <option value="2/2">2nd Year 2nd Semester</option>
+                        <option value="3/1">3rd Year 1st Semester</option>
+                        <option value="3/2">3rd Year 2nd Semester</option>
+                        <option value="4/1">4th Year 1st Semester</option>
+                        <option value="4/2">4th Year 2nd Semester</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span class="btn-text">Check Result</span>
+                    <span class="btn-loading" hidden>
+                        <svg class="spinner" viewBox="0 0 50 50">
+                            <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="5"></circle>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <div id="resultDisplay" class="result-container"></div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2025 Rabindra Maitree University</p>
+    </footer>
+
     <script src="./js/main.js"></script>
 </body>
 </html>

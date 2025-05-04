@@ -31,82 +31,76 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showResult(data) {
         const html = `
-            <div class="card result-card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Result Information</h5>
-                    <button class="btn btn-sm btn-outline-light print-btn" onclick="window.print()">
-                        <i class="bi bi-printer"></i> Print
-                    </button>
+            <div class="result-container">
+                <div class="result-header">
+                    <img src="https://rmu.ac.bd/wp-content/uploads/2023/04/logo-80.jpg" alt="RMU Logo" class="result-logo">
+                    <div class="header-text">
+                        <h1>Rabindra Maitree University</h1>
+                        <h2>Semester Final Examination 2025</h2>
+                        <h3>Result Sheet</h3>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="result-info">
-                        <div class="info-item">
-                            <strong>Student ID:</strong> ${data.id}
-                        </div>
-                        <div class="info-item">
-                            <strong>Name:</strong> ${data.name}
-                        </div>
-                        <div class="info-item">
-                            <strong>Department:</strong> ${data.department}
-                        </div>
-                        <div class="info-item">
-                            <strong>Credits:</strong> ${data.credits}
-                        </div>
-                        <div class="info-item">
-                            <strong>Letter Grade:</strong> ${data.letterGrade}
-                        </div>
-                        <div class="info-item">
-                            <strong>CGPA:</strong> ${data.cgpa}
-                        </div>
-                    </div>
-                    
-                    <div class="alert ${data.result === 'Promoted' ? 'alert-success' : 'alert-danger'} text-center">
-                        <strong>Result Status:</strong> ${data.result}
-                    </div>
 
-                    <div class="table-responsive mt-3">
-                        <table class="table table-bordered table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Subject</th>
-                                    <th class="text-center">Grade</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.subjects.map(subject => `
-                                    <tr>
-                                        <td>${subject.name}</td>
-                                        <td class="text-center">
-                                            <span class="badge ${getGradeColor(subject.grade)} grade-badge">
-                                                ${subject.grade}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <table class="student-info-table">
+                    <tr>
+                        <td>Student ID</td>
+                        <td>${data.id}</td>
+                    </tr>
+                    <tr>
+                        <td>Name</td>
+                        <td>${data.name}</td>
+                    </tr>
+                    <tr>
+                        <td>Program</td>
+                        <td>${data.department}</td>
+                    </tr>
+                    <tr>
+                        <td>Letter Grade</td>
+                        <td>${data.letterGrade}</td>
+                    </tr>
+                    <tr>
+                        <td>CGPA</td>
+                        <td>${data.cgpa}</td>
+                    </tr>
+                    <tr>
+                        <td>Result</td>
+                        <td>${data.result}</td>
+                    </tr>
+                </table>
+
+                <h2 class="grade-sheet-title">Grade Sheet</h2>
+
+                <table class="grade-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.subjects.map(subject => `
+                            <tr>
+                                <td>${subject.name}</td>
+                                <td>${subject.grade}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <button onclick="window.print()" class="print-button">Print Result</button>
             </div>
         `;
 
-        resultDisplay.innerHTML = html;
-    }
-
-    function getGradeColor(grade) {
-        switch(grade[0]) {
-            case 'A': return 'bg-success';
-            case 'B': return 'bg-primary';
-            case 'C': return 'bg-warning';
-            default: return 'bg-danger';
-        }
+        document.getElementById('resultDisplay').innerHTML = html;
     }
 
     function showLoading() {
         resultDisplay.innerHTML = `
-            <div class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+            <div class="loading-container">
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <h3 class="loading-text">Fetching Result...</h3>
+                    <p class="loading-message">Please wait while we retrieve your result</p>
                 </div>
             </div>
         `;

@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     function showLoading() {
         resultDisplay.innerHTML = `
+        <div class="result-container">
             <div class="loading-container">
                 <div class="loading-content">
                     <div class="loading-spinner"></div>
@@ -149,6 +150,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     <p class="loading-message">Please wait while we retrieve your result</p>
                 </div>
             </div>
+        </div>
         `;
     }
 

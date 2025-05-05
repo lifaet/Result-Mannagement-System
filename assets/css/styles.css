@@ -350,7 +350,6 @@ input:focus, select:focus {
     /* Ensure content stays within margins */
     .student-info-table,
     .grade-table {
-        margin: 1rem 0;
         width: 100%;
     }
 

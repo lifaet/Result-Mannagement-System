@@ -85,7 +85,6 @@ function getStudentResult(studentId, semester) {
   if (!sheet) return null;
 
   const data = sheet.getDataRange().getValues();
-  const headers = data[0];  // Get header row
   const studentRow = data.find((row, index) =>
     index > 0 && row[0].toString().trim().toUpperCase() === studentId.toString().trim().toUpperCase()
   );
@@ -105,15 +104,15 @@ function getStudentResult(studentId, semester) {
   };
 
   // Extract subjects (starting from column 7)
-  for (let i = 7; i < headers.length; i += 2) {
-    const subjectName = headers[i];
-    const gradeColumn = i + 1;
+  for (let i = 7; i < studentRow.length; i += 2) {
+    const subjectName = studentRow[i];
+    const subjectGrade = studentRow[i + 1];
 
     // Only add if both subject name and grade exist
-    if (subjectName && studentRow[gradeColumn]) {
+    if (subjectName && subjectGrade) {
       result.subjects.push({
         name: subjectName.toString().trim(),
-        grade: studentRow[gradeColumn].toString().trim()
+        grade: subjectGrade.toString().trim()
       });
     }
   }

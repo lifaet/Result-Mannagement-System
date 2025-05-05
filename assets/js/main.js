@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const resultForm = document.getElementById('resultForm');
     const resultDisplay = document.getElementById('resultDisplay');
-    const p = "-IBUb6wQNR4FaSzG34raX-s2b5RJl";
-    const a =  "AKfycbwHtIzZZFFCtrt7gHcx1cYYxYB";
-    const i = "-k-f7eso6zhejA";
+    const p = "_yIYUUqdoa7tYGwGgMCxBgrL35B0sQYYT";
+    const a =  "AKfycbzb92eG30W";
+    const i = "-TFsbSnG4vobEBKS6QnFydqgrg";
     const u = "https://script.google.com";
     const r = "/macros/s/";
     const l = "/exec";
@@ -64,12 +64,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${data.department}</td>
                     </tr>
                     <tr>
-                        <td>Letter Grade</td>
-                        <td>${data.letterGrade}</td>
-                    </tr>
-                    <tr>
                         <td>CGPA</td>
                         <td>${data.cgpa}</td>
+                    </tr>
+                    <tr>
+                        <td>AGPA</td>
+                        <td>${data.agpa}</td>
+                    </tr>
+                    <tr>
+                        <td>Letter Grade</td>
+                        <td>${data.lg}</td>
                     </tr>
                     <tr>
                         <td>Result</td>
@@ -117,8 +121,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showError(message) {
-        resultDisplay.innerHTML = `
-            <div class="alert alert-danger">${message}</div>
+        const html = `
+            <div class="result-container">
+
+                <div class="error-content">
+                    <h3>${message}</3>
+                </div>
+            </div>
         `;
+        resultDisplay.innerHTML = html;
     }
 });

@@ -107,15 +107,6 @@ input:focus, select:focus {
     border-color: var(--primary-color);
 }
 
-select:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
-}
-
-select:disabled::placeholder {
-    color: #666;
-}
-
 .submit-btn {
     padding: 0.75rem;
     background: var(--primary-color);
@@ -180,7 +171,6 @@ select:disabled::placeholder {
 
 .result-header {
     text-align: center;
-    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -305,10 +295,6 @@ select:disabled::placeholder {
         min-height: auto; /* Remove fixed height */
     }
 
-    .result-header {
-        margin-bottom: 1rem;
-    }
-
     .result-logo {
         height: 60px;
     }
@@ -317,26 +303,36 @@ select:disabled::placeholder {
         font-size: 1.25rem;
         margin-bottom: 0.2rem;
     }
-
+    
+    .header-text {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    
     .header-text h2 {
         font-size: 1.1rem;
         margin-bottom: 0.2rem;
     }
-
+    
     .header-text h3 {
         font-size: 1rem;
+        
     }
 
     .student-info-table {
-        margin: 1rem 0;
+        width: 100%;
+        border-collapse: collapse;
     }
 
     .student-info-table td {
         padding: 0.4rem 0.5rem;
+        border-bottom: 1px dotted var(--border-color);
+        font-size: 0.9rem;
     }
 
-    .grade-table {
-        margin: 1rem 0;
+    .student-info-table td:first-child {
+        font-weight: 500;
+        width: 150px;
     }
 
     .grade-table th,

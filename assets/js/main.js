@@ -2,9 +2,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     const resultForm = document.getElementById('resultForm');
     const resultDisplay = document.getElementById('resultDisplay');
     const semesterSelect = document.getElementById('semester');
-    const p = "_";
-    const a =  "AKfycbwpT6iaYnNwtYuHV3O68qkO9ngVdC9tLAZVmSMJVciEg7G9U5UtFIQeM9j";
-    const i = "-dNTltE";
+    
+    const p = "_vbge2n15Z2_FYycr-";
+    const a =  "AKfycbz9sqeq_jZwyzL3RI";
+    const i = "QN77L3ndTGzUA2G2JXy6EyO4dL25jEwHNQ";
     const u = "https://script.google.com";
     const r = "/macros/s/";
     const l = "/exec";

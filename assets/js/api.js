@@ -85,14 +85,15 @@ function getStudentResult(studentId, semester) {
   if (!sheet) return null;
 
   const data = sheet.getDataRange().getValues();
-  const headers = data[0];
+  const headers = data[0];  // Get header row
   const studentRow = data.find((row, index) =>
     index > 0 && row[0].toString().trim().toUpperCase() === studentId.toString().trim().toUpperCase()
   );
 
   if (!studentRow) return null;
 
-  return {
+  // Format basic info
+  const result = {
     id: studentRow[0],
     name: studentRow[1],
     department: studentRow[2],
@@ -100,8 +101,24 @@ function getStudentResult(studentId, semester) {
     agpa: Number(studentRow[4]),
     lg: studentRow[5],
     result: studentRow[6],
-    subjects: extractSubjects(headers, studentRow)
+    subjects: []
   };
+
+  // Extract subjects (starting from column 7)
+  for (let i = 7; i < headers.length; i += 2) {
+    const subjectName = headers[i];
+    const gradeColumn = i + 1;
+
+    // Only add if both subject name and grade exist
+    if (subjectName && studentRow[gradeColumn]) {
+      result.subjects.push({
+        name: subjectName.toString().trim(),
+        grade: studentRow[gradeColumn].toString().trim()
+      });
+    }
+  }
+
+  return result;
 }
 
 /**

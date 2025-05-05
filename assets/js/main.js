@@ -1,13 +1,45 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const resultForm = document.getElementById('resultForm');
     const resultDisplay = document.getElementById('resultDisplay');
-    const p = "_yIYUUqdoa7tYGwGgMCxBgrL35B0sQYYT";
-    const a =  "AKfycbzb92eG30W";
-    const i = "-TFsbSnG4vobEBKS6QnFydqgrg";
+    const semesterSelect = document.getElementById('semester');
+    const p = "_";
+    const a =  "AKfycbwpT6iaYnNwtYuHV3O68qkO9ngVdC9tLAZVmSMJVciEg7G9U5UtFIQeM9j";
+    const i = "-dNTltE";
     const u = "https://script.google.com";
     const r = "/macros/s/";
     const l = "/exec";
-    
+
+    // Disable form while loading semesters
+    resultForm.querySelector('button[type="submit"]').disabled = true;
+    semesterSelect.disabled = true;
+
+    // Fetch available semesters
+    try {
+        const response = await fetch(`${u+r+a+p+i+l}?action=getSemesters`);
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            // Clear existing options except the first one
+            semesterSelect.innerHTML = '<option value="">Select Semester</option>';
+            
+            // Add new options
+            result.data.forEach(semester => {
+                const option = document.createElement('option');
+                option.value = semester.value;
+                option.textContent = semester.value;
+                semesterSelect.appendChild(option);
+            });
+        } else {
+            console.error('Failed to load semesters:', result.error);
+        }
+    } catch (error) {
+        console.error('Error loading semesters:', error);
+    } finally {
+        // Re-enable form
+        resultForm.querySelector('button[type="submit"]').disabled = false;
+        semesterSelect.disabled = false;
+    }
+
     resultForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         const studentId = document.getElementById('studentId').value.trim().toUpperCase();

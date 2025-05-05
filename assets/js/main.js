@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const html = `
             <div class="result-container">
                 <div class="result-header">
-                    <img src="https://rmu.ac.bd/wp-content/uploads/2023/04/logo-80.jpg" alt="RMU Logo" class="result-logo">
+                    <img src="./assets/logo.png" alt="RMU Logo" class="result-logo">
                     <div class="header-text">
                         <h1>Rabindra Maitree University</h1>
                         <h2>Semester Final Examination 2025</h2>

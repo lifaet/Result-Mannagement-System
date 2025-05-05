@@ -90,29 +90,29 @@ function getStudentResult(studentId, semester) {
 
   if (!studentRow) return null;
 
+  // Format numbers to always have 2 decimal places
+  const formatNumber = (num) => {
+    return Number(num).toFixed(2);
+  };
+
   const result = {
     id: studentRow[0],
     name: studentRow[1],
     department: studentRow[2],
-    cgpa: Number(studentRow[3]),
-    agpa: Number(studentRow[4]),
+    cgpa: formatNumber(studentRow[3]),
+    agpa: formatNumber(studentRow[4]),
     lg: studentRow[5],
     result: studentRow[6],
     subjects: []
   };
 
+  // Take all subjects and format numeric grades to 2 decimal places
   for (let i = 7; i < studentRow.length - 1; i += 2) {
-    const subjectName = studentRow[i];
-    const subjectGrade = studentRow[i + 1];
-
-    if (subjectName && subjectGrade && 
-        subjectName.toString().trim() !== '' && 
-        subjectGrade.toString().trim() !== '') {
-      result.subjects.push({
-        name: subjectName.toString().trim(),
-        grade: subjectGrade.toString().trim()
-      });
-    }
+    const grade = studentRow[i + 1];
+    result.subjects.push({
+      name: studentRow[i],
+      grade: !isNaN(grade) ? formatNumber(grade) : grade
+    });
   }
 
   return result;

@@ -57,7 +57,6 @@ function handleGetSemesters() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheets = ss.getSheets();
     
-    // Get all sheet names except hidden system sheets
     const semesters = sheets
       .map(sheet => sheet.getName())
       .filter(name => !name.startsWith('_'))
@@ -91,7 +90,6 @@ function getStudentResult(studentId, semester) {
 
   if (!studentRow) return null;
 
-  // Format basic info
   const result = {
     id: studentRow[0],
     name: studentRow[1],
@@ -103,13 +101,13 @@ function getStudentResult(studentId, semester) {
     subjects: []
   };
 
-  // Extract subjects (starting from column 7)
-  for (let i = 7; i < studentRow.length; i += 2) {
+  for (let i = 7; i < studentRow.length - 1; i += 2) {
     const subjectName = studentRow[i];
     const subjectGrade = studentRow[i + 1];
 
-    // Only add if both subject name and grade exist
-    if (subjectName && subjectGrade) {
+    if (subjectName && subjectGrade && 
+        subjectName.toString().trim() !== '' && 
+        subjectGrade.toString().trim() !== '') {
       result.subjects.push({
         name: subjectName.toString().trim(),
         grade: subjectGrade.toString().trim()
@@ -118,32 +116,6 @@ function getStudentResult(studentId, semester) {
   }
 
   return result;
-}
-
-/**
- * Extract subjects from student data row
- */
-function extractSubjects(headers, row) {
-  const subjects = [];
-
-  // Process all columns after the basic info (index 7 onwards)
-  for (let i = 7; i < row.length; i += 2) {
-    const subjectName = headers[i];
-    const subjectGrade = row[i + 1];
-
-    // Validate subject and grade
-    if (subjectName && subjectGrade &&
-      subjectName.toString().trim() !== '' &&
-      subjectGrade.toString().trim() !== '') {
-
-      subjects.push({
-        name: subjectName.toString().trim(),
-        grade: subjectGrade.toString().trim()
-      });
-    }
-  }
-
-  return subjects;
 }
 
 /**

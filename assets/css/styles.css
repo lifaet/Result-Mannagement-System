@@ -274,7 +274,7 @@ input:focus, select:focus {
         margin: 0;
         padding: 0;
         background: white;
-        min-height: 0; /* Remove full viewport height */
+        min-height: 0;
     }
 
     .site-header, 
@@ -288,11 +288,11 @@ input:focus, select:focus {
     .result-container {
         max-width: 100%;
         width: auto;
-        margin: 0;
-        padding: 1rem;
+        margin: 0.5in auto;
+        padding: 0; 
         box-shadow: none;
         border: none;
-        min-height: auto; /* Remove fixed height */
+        min-height: auto;
     }
 
     .result-logo {
@@ -345,6 +345,19 @@ input:focus, select:focus {
     .student-info-table,
     .grade-table {
         page-break-inside: avoid;
+    }
+
+    /* Ensure content stays within margins */
+    .student-info-table,
+    .grade-table {
+        margin: 1rem 0;
+        width: 100%;
+    }
+
+    /* Prevent content from overflowing margins */
+    * {
+        overflow-wrap: break-word;
+        word-wrap: break-word;
     }
 }
 

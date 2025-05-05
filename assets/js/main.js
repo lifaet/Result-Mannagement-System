@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const resultForm = document.getElementById('resultForm');
     const resultDisplay = document.getElementById('resultDisplay');
     const semesterSelect = document.getElementById('semester');
-    -IDPGNw
     const p = "07uvvfuO8hr6SDVBmrEuzhIVhr4Vbhwgac2pqG";
     const a =  "AKfycbxNqpT0YtVvzwc9yryqAvjTl";
     const i = "-IDPGNw";

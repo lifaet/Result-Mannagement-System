@@ -56,7 +56,7 @@ function handleGetSemesters() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheets = ss.getSheets();
-    
+
     const semesters = sheets
       .map(sheet => sheet.getName())
       .filter(name => !name.startsWith('_'))

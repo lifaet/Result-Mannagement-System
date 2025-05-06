@@ -288,16 +288,13 @@ input:focus, select:focus {
     .result-container {
         max-width: 100%;
         width: auto;
-        padding: 0; 
+        margin: 0 !important;  /* Remove any margins */
+        padding: 0 !important; 
         box-shadow: none;
         border: none;
         min-height: auto;
     }
-
-    .result-logo {
-        height: 60px;
-    }
-
+    
     .header-text h1 {
         font-size: 1.25rem;
         margin-bottom: 0.2rem;

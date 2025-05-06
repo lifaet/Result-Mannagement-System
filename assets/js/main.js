@@ -2,20 +2,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     const resultForm = document.getElementById('resultForm');
     const resultDisplay = document.getElementById('resultDisplay');
     const semesterSelect = document.getElementById('semester');
-    const p = "07uvvfuO8hr6SDVBmrEuzhIVhr4Vbhwgac2pqG";
-    const a =  "AKfycbxNqpT0YtVvzwc9yryqAvjTl";
-    const i = "-IDPGNw";
-    const u = "https://script.google.com";
-    const r = "/macros/s/";
-    const l = "/exec";
-
+    const api = "AKfycbxNqpT0YtVvzwc9yryqAvjTl07uvvfuO8hr6SDVBmrEuzhIVhr4Vbhwgac2pqG-IDPGNw"
     // Disable form while loading semesters
     resultForm.querySelector('button[type="submit"]').disabled = true;
     semesterSelect.disabled = true;
 
     // Fetch available semesters
     try {
-        const response = await fetch(`${u+r+a+p+i+l}?action=getSemesters`);
+        const response = await fetch(`https://script.google.com/macros/s/${api}/exec?action=getSemesters`);
         const result = await response.json();
 
         if (result.status === 'success') {
@@ -56,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 });
             }, 100);
 
-            const response = await fetch(`${u+r+a+p+i+l}?id=${studentId}&semester=${semester}`);
+            const response = await fetch(`https://script.google.com/macros/s/${api}/exec?id=${studentId}&semester=${semester}`);
             const result = await response.json();
 
             if (result.status === 'error') {

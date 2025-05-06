@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     const resultForm = document.getElementById('resultForm');
     const resultDisplay = document.getElementById('resultDisplay');
     const semesterSelect = document.getElementById('semester');
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (result.status === 'success') {
             // Clear existing options except the first one
             semesterSelect.innerHTML = '<option value="">Select Semester</option>';
-            
+
             // Add new options
             result.data.forEach(semester => {
                 const option = document.createElement('option');
@@ -34,14 +34,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         semesterSelect.disabled = false;
     }
 
-    resultForm.addEventListener('submit', async function(e) {
+    resultForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         const studentId = document.getElementById('studentId').value.trim().toUpperCase();
         const semester = document.getElementById('semester').value;
-        
+
         try {
             showLoading();
-            
+
             // Add delay before scrolling for better UX
             setTimeout(() => {
                 window.scrollTo({
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         `;
 
         document.getElementById('resultDisplay').innerHTML = html;
-        
+
     }
 
     function showLoading() {

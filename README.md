@@ -547,11 +547,11 @@ Response: {
 │   Request    │     │     Data     │     │   Response   │
 │  Validation  │ →   │  Processing  │ →   │  Formatting  │
 └──────────────┘     └──────────────┘     └──────────────┘
-      ↓                     ↓                    ↑
+      ↓                     ↓                   ↑
       │              ┌──────────────┐           │
-      └──────────→  │    Error     │  ←────────┘
-                    │   Handling    │
-                    └──────────────┘
+      └──────────→   │    Error     │  ←────────┘
+                     │   Handling   │
+                     └──────────────┘
 ```
 
 ### 4.4 Frontend Implementation
@@ -679,11 +679,11 @@ The RMS successfully delivers the following features:
 ┌────────────────────┬─────────────────────────┐
 │ Feature            │ Implementation Status   │
 ├────────────────────┼─────────────────────────┤
-│ Student ID Search  │ Complete               │
-│ Semester Selection │ Complete               │
-│ Result Display     │ Complete               │
-│ Print Layout       │ Complete               │
-│ Mobile View        │ Complete               │
+│ Student ID Search  │ Complete                │
+│ Semester Selection │ Complete                │
+│ Result Display     │ Complete                │
+│ Print Layout       │ Complete                │
+│ Mobile View        │ Complete                │
 └────────────────────┴─────────────────────────┘
 ```
 
@@ -692,10 +692,10 @@ The RMS successfully delivers the following features:
 ┌────────────────────┬─────────────────────────┐
 │ Functionality      │ Status                  │
 ├────────────────────┼─────────────────────────┤
-│ CGPA Calculation   │ 2 Decimal Places       │
-│ AGPA Processing    │ 2 Decimal Places       │
-│ Subject Grades     │ All Formats Supported  │
-│ Data Validation    │ Input Sanitization     │
+│ CGPA Calculation   │ 2 Decimal Places        │
+│ AGPA Processing    │ 2 Decimal Places        │
+│ Subject Grades     │ All Formats Supported   │
+│ Data Validation    │ Input Sanitization      │
 └────────────────────┴─────────────────────────┘
 ```
 

@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const resultForm = document.getElementById('resultForm');
     const resultDisplay = document.getElementById('resultDisplay');
     const semesterSelect = document.getElementById('semester');
-    const api = "AKfycbxNqpT0YtVvzwc9yryqAvjTl07uvvfuO8hr6SDVBmrEuzhIVhr4Vbhwgac2pqG-IDPGNw"
+    const api = "AKfycbyNBxT9kt8jZkiS7bt2kyYfVDLim52Bx3i3X1Cf_5hklcWaSlmVmohSAmI6To6IfK_Ztg"
     // Disable form while loading semesters
     resultForm.querySelector('button[type="submit"]').disabled = true;
     semesterSelect.disabled = true;

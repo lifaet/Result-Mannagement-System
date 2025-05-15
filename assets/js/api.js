@@ -4,49 +4,96 @@
 function doGet(e) {
   try {
     const { action, id: studentId, semester } = e.parameter || {};
+    const result = getStudentResult(studentId, semester);
 
-    // Handle semester list request
     if (action === 'getSemesters') {
       return handleGetSemesters();
     }
 
-    // Handle result request
     if (!studentId || !semester) {
-      return createApiResponse(400, {
-        error: 'Missing required parameters',
-        required: {
-          id: 'Student ID',
-          semester: 'Semester'
-        }
-      });
+      return createErrorResponse(400, 'Missing required parameters');
     }
-
-    // Get result data
-    const result = getStudentResult(studentId, semester);
 
     if (!result) {
-      return createApiResponse(404, {
-        error: 'Result not found',
-        params: { studentId, semester }
-      });
+      return createErrorResponse(404, 'Result not found');
     }
 
-    // Format CGPA and AGPA
-    if (result.cgpa !== undefined && typeof result.cgpa === 'number') {
-      result.cgpa = parseFloat(result.cgpa.toFixed(2));
-    }
-    if (result.agpa !== undefined && typeof result.agpa === 'number') {
-      result.agpa = parseFloat(result.agpa.toFixed(2));
-    }
-
-    return createApiResponse(200, { data: result });
+    return createSuccessResponse(formatResult(result));
 
   } catch (error) {
-    return createApiResponse(500, {
-      error: 'Server error',
-      message: error.toString()
+    return createErrorResponse(500, error.toString());
+  }
+}
+
+/**
+ * Format numbers to 2 decimal places
+ */
+function formatNumber(num) {
+  return Number(num).toFixed(2);
+}
+
+/**
+ * Format result data with proper decimal places
+ */
+function formatResult(result) {
+  return {
+    ...result,
+    cgpa: formatNumber(result.cgpa),
+    agpa: formatNumber(result.agpa)
+  };
+}
+
+/**
+ * Get student result from sheet
+ */
+function getStudentResult(studentId, semester) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(semester);
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  const studentRow = findStudentRow(data, studentId);
+  if (!studentRow) return null;
+
+  return {
+    id: studentRow[0],
+    name: studentRow[1],
+    department: studentRow[2],
+    cgpa: studentRow[3],
+    agpa: studentRow[4],
+    lg: studentRow[5],
+    result: studentRow[6],
+    subjects: extractSubjects(studentRow)
+  };
+}
+
+/**
+ * Find student row by ID
+ */
+function findStudentRow(data, studentId) {
+  return data.find((row, index) => 
+    index > 0 && row[0].toString().trim().toUpperCase() === studentId.toString().trim().toUpperCase()
+  );
+}
+
+/**
+ * Extract subjects from student row
+ */
+function extractSubjects(studentRow) {
+  const subjects = [];
+  for (let i = 7; i < studentRow.length - 1; i += 2) {
+    subjects.push({
+      name: studentRow[i],
+      grade: formatGrade(studentRow[i + 1])
     });
   }
+  return subjects;
+}
+
+/**
+ * Format grade value
+ */
+function formatGrade(grade) {
+  return !isNaN(grade) ? formatNumber(grade) : grade;
 }
 
 /**
@@ -54,68 +101,31 @@ function doGet(e) {
  */
 function handleGetSemesters() {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheets = ss.getSheets();
-
+    const sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
     const semesters = sheets
       .map(sheet => sheet.getName())
       .filter(name => !name.startsWith('_'))
-      .map(semester => ({
-        value: semester
-      }))
+      .map(semester => ({ value: semester }))
       .sort((a, b) => a.value.localeCompare(b.value));
 
-    return createApiResponse(200, { data: semesters });
+    return createSuccessResponse(semesters);
   } catch (error) {
-    return createApiResponse(500, {
-      error: 'Failed to fetch semesters',
-      message: error.toString()
-    });
+    return createErrorResponse(500, error.toString());
   }
 }
 
 /**
- * Get student result from sheet
+ * Create success response
  */
-function getStudentResult(studentId, semester) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(semester);
+function createSuccessResponse(data) {
+  return createApiResponse(200, { data });
+}
 
-  if (!sheet) return null;
-
-  const data = sheet.getDataRange().getValues();
-  const studentRow = data.find((row, index) =>
-    index > 0 && row[0].toString().trim().toUpperCase() === studentId.toString().trim().toUpperCase()
-  );
-
-  if (!studentRow) return null;
-
-  // Format numbers to always have 2 decimal places
-  const formatNumber = (num) => {
-    return Number(num).toFixed(2);
-  };
-
-  const result = {
-    id: studentRow[0],
-    name: studentRow[1],
-    department: studentRow[2],
-    cgpa: formatNumber(studentRow[3]),
-    agpa: formatNumber(studentRow[4]),
-    lg: studentRow[5],
-    result: studentRow[6],
-    subjects: []
-  };
-
-  // Take all subjects and format numeric grades to 2 decimal places
-  for (let i = 7; i < studentRow.length - 1; i += 2) {
-    const grade = studentRow[i + 1];
-    result.subjects.push({
-      name: studentRow[i],
-      grade: !isNaN(grade) ? formatNumber(grade) : grade
-    });
-  }
-
-  return result;
+/**
+ * Create error response
+ */
+function createErrorResponse(code, message) {
+  return createApiResponse(code, { error: message });
 }
 
 /**

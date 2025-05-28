@@ -17,7 +17,7 @@ export async function onRequest(context) {
     // Create cache key based on request
     const cacheKey = new Request(
       action === 'getSemesters' ? `${SHEET_API}?action=getSemesters` :
-      action === 'getAllResults' ? `${SHEET_API}?action=getAllResults` :
+      action === `${AllDataAPI}` ? `${SHEET_API}?action=${AllDataAPI}` :
       `${SHEET_API}?id=${studentId}&semester=${semester}`
     )
 
@@ -98,7 +98,7 @@ export async function preloadCache(context) {
         }))
         
         // Get all results for each semester
-        const allResults = await fetch(`${SHEET_API}?action=getAllResults`)
+        const allResults = await fetch(`${SHEET_API}?action=${AllDataAPI}`)
         const resultsData = await allResults.json()
         
         if (resultsData.status === 'success') {

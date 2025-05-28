@@ -1,16 +1,15 @@
 export async function onRequest(context) {
-  // Get script ID from environment variable
-  const scriptId = context.env.SHEET_API
-  if (!scriptId) {
-    return new Response('API configuration error', { status: 500 })
-  }
-
-  const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`
-  const { request } = context
-  const url = new URL(request.url)
-  const cache = caches.default
-  
   try {
+    const scriptId = context.env.SHEET_API
+    if (!scriptId) {
+      throw new Error('Missing SHEET_API environment variable')
+    }
+
+    const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`
+    const { request } = context
+    const url = new URL(request.url)
+    const cache = caches.default
+    
     // Handle semester list request
     const action = url.searchParams.get('action')
     if (action === 'getSemesters') {
@@ -19,6 +18,9 @@ export async function onRequest(context) {
       
       if (!response) {
         const apiResponse = await fetch(`${SHEET_API}?action=getSemesters`)
+        if (!apiResponse.ok) {
+          throw new Error(`API responded with status ${apiResponse.status}`)
+        }
         const data = await apiResponse.json()
         
         response = new Response(JSON.stringify(data), {
@@ -29,7 +31,7 @@ export async function onRequest(context) {
           }
         })
         
-        context.waitUntil(cache.put(cacheKey, response.clone()))
+        await cache.put(cacheKey, response.clone())
       }
       
       return response
@@ -40,7 +42,7 @@ export async function onRequest(context) {
     const semester = url.searchParams.get('semester')
     
     if (!studentId || !semester) {
-      return new Response('Missing required parameters', { status: 400 })
+      throw new Error('Missing studentId or semester parameter')
     }
 
     const cacheKey = `${studentId}-${semester}`
@@ -48,6 +50,9 @@ export async function onRequest(context) {
     
     if (!response) {
       const apiResponse = await fetch(`${SHEET_API}?id=${studentId}&semester=${semester}`)
+      if (!apiResponse.ok) {
+        throw new Error(`API responded with status ${apiResponse.status}`)
+      }
       const data = await apiResponse.json()
       
       response = new Response(JSON.stringify(data), {
@@ -58,15 +63,16 @@ export async function onRequest(context) {
         }
       })
       
-      context.waitUntil(cache.put(cacheKey, response.clone()))
+      await cache.put(cacheKey, response.clone())
     }
     
     return response
 
   } catch (error) {
+    console.error('Worker error:', error.message)
     return new Response(JSON.stringify({
       status: 'error',
-      error: 'Failed to process request'
+      error: error.message || 'Failed to process request'
     }), {
       status: 500,
       headers: {

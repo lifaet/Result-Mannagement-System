@@ -17,7 +17,11 @@ export async function onRequest(context) {
       let response = await cache.match(cacheKey)
       
       if (!response) {
-        const apiResponse = await fetch(`${SHEET_API}?action=getSemesters`)
+        // Create proper URL with URLSearchParams
+        const params = new URLSearchParams({ action: 'getSemesters' })
+        const apiUrl = `${SHEET_API}?${params.toString()}`
+        
+        const apiResponse = await fetch(apiUrl)
         if (!apiResponse.ok) {
           throw new Error(`API responded with status ${apiResponse.status}`)
         }
@@ -49,7 +53,14 @@ export async function onRequest(context) {
     let response = await cache.match(cacheKey)
     
     if (!response) {
-      const apiResponse = await fetch(`${SHEET_API}?id=${studentId}&semester=${semester}`)
+      // Create proper URL with URLSearchParams
+      const params = new URLSearchParams({
+        id: studentId,
+        semester: semester
+      })
+      const apiUrl = `${SHEET_API}?${params.toString()}`
+      
+      const apiResponse = await fetch(apiUrl)
       if (!apiResponse.ok) {
         throw new Error(`API responded with status ${apiResponse.status}`)
       }

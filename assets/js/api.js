@@ -1,6 +1,3 @@
-/**
- * Main API endpoint handler
- */
 function doGet(e) {
   try {
     const { action, id: studentId, semester } = e.parameter || {};

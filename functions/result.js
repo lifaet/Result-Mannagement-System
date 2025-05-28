@@ -17,7 +17,7 @@ export async function onRequest(context) {
     // Create cache key based on request
     const cacheKey = new Request(
       action === 'getSemesters' ? `${SHEET_API}?action=getSemesters` :
-      // action === `${AllDataAPI}` ? `${SHEET_API}?action=${AllDataAPI}` :
+      action === `${AllDataAPI}` ? `${SHEET_API}?action=${AllDataAPI}` :
       `${SHEET_API}?id=${studentId}&semester=${semester}`
     )
 

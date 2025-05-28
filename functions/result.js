@@ -19,7 +19,8 @@ export async function onRequest(context) {
       const semesterData = await semResponse.json()
       console.log('Semester data:', semesterData) // Debug log
 
-      if (!semesterData || !semesterData.status === 'success' || !semesterData.data) {
+      // Fix the condition check
+      if (!semesterData || semesterData.status !== 'success' || !semesterData.data) {
         throw new Error('Invalid semester data received')
       }
 
@@ -39,7 +40,9 @@ export async function onRequest(context) {
       const allData = await allResponse.json()
       console.log('All results data:', allData) // Debug log
 
-      if (!allData || !allData.status === 'success' || !Array.isArray(allData.data)) {
+      // Fix the condition check for results data
+      if (!allData || allData.status !== 'success' || !Array.isArray(allData.data)) {
+        console.error('Received data:', allData)
         throw new Error('Invalid results data received')
       }
 

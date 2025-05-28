@@ -381,6 +381,10 @@ select:focus {
         padding: 0.4rem 0.5rem;
     }
 
+    .button-group {
+        display: none;
+    }
+
     /* Prevent page breaks inside elements */
     .result-header,
     .student-info-table,

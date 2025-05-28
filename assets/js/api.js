@@ -187,20 +187,21 @@ function createApiResponse(code, body) {
 }
 
 /**
- * Generate a new API key and store it
- * Run this function once from the Apps Script editor
+ * Generate and set a random API key
+ * Run this function manually from the Apps Script editor
  */
-function generateApiKey() {
-  const apiKey = Utilities.getUuid();
-  PropertiesService.getScriptProperties().setProperty('API_KEY', apiKey);
-  console.log('New API Key (copy this):', apiKey);
-  return apiKey;
-}
+function setupApiKey() {
+  // Generate a random string of 32 characters
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let apiKey = '';
+  for (let i = 0; i < 32; i++) {
+    apiKey += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
 
-/**
- * Verify API key for secure endpoints
- */
-function verifyApiKey(key) {
-  const validKey = PropertiesService.getScriptProperties().getProperty('API_KEY');
-  return key === validKey;
+  // Save to script properties
+  PropertiesService.getScriptProperties().setProperty('API_KEY', apiKey);
+  
+  // Log the key to copy it
+  console.log('New API Key:', apiKey);
+  return apiKey;
 }

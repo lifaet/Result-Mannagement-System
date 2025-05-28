@@ -2,12 +2,9 @@ function doGet(e) {
   try {
     const { action, id: studentId, semester, key } = e.parameter || {};
 
-    // Verify API key for getAllResults
-    if (action === 'getAllResults') {
-      const validKey = PropertiesService.getScriptProperties().getProperty('API_KEY')
-      if (key !== validKey) {
-        throw new Error('Unauthorized')
-      }
+    // Verify API key for secure endpoints
+    if (action === 'getAllResults' && !verifyApiKey(key)) {
+      throw new Error('Unauthorized');
     }
 
     if (action === 'getAllResults') {
@@ -187,4 +184,23 @@ function createApiResponse(code, body) {
 
   return ContentService.createTextOutput(JSON.stringify(response, null, 2))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Generate a new API key and store it
+ * Run this function once from the Apps Script editor
+ */
+function generateApiKey() {
+  const apiKey = Utilities.getUuid();
+  PropertiesService.getScriptProperties().setProperty('API_KEY', apiKey);
+  console.log('New API Key (copy this):', apiKey);
+  return apiKey;
+}
+
+/**
+ * Verify API key for secure endpoints
+ */
+function verifyApiKey(key) {
+  const validKey = PropertiesService.getScriptProperties().getProperty('API_KEY');
+  return key === validKey;
 }

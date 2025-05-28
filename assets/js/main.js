@@ -58,14 +58,15 @@ document.addEventListener('DOMContentLoaded', async function () {
                 return;
             }
 
-            showResult(result.data);
+            displayResult(result.data);
         } catch (error) {
             showError('Failed to fetch result. Please try again.');
         }
     });
 
-    function showResult(data) {
-        const html = `
+    function displayResult(result) {
+        const resultDisplay = document.getElementById('resultDisplay');
+        resultDisplay.innerHTML = `
             <div class="result-container">
                 <div class="result-header">
                     <img src="./assets/logo.png" alt="RMU Logo" class="result-logo">
@@ -79,31 +80,31 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <table class="student-info-table">
                     <tr>
                         <td>Student ID</td>
-                        <td>${data.id}</td>
+                        <td>${result.id}</td>
                     </tr>
                     <tr>
                         <td>Name</td>
-                        <td>${data.name}</td>
+                        <td>${result.name}</td>
                     </tr>
                     <tr>
                         <td>Program</td>
-                        <td>${data.department}</td>
+                        <td>${result.department}</td>
                     </tr>
                     <tr>
                         <td>CGPA</td>
-                        <td>${data.cgpa}</td>
+                        <td>${result.cgpa}</td>
                     </tr>
                     <tr>
                         <td>AGPA</td>
-                        <td>${data.agpa}</td>
+                        <td>${result.agpa}</td>
                     </tr>
                     <tr>
                         <td>Letter Grade</td>
-                        <td>${data.lg}</td>
+                        <td>${result.lg}</td>
                     </tr>
                     <tr>
                         <td>Result</td>
-                        <td>${data.result}</td>
+                        <td>${result.result}</td>
                     </tr>
                 </table>
 
@@ -117,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         </tr>
                     </thead>
                     <tbody>
-                        ${data.subjects.map(subject => `
+                        ${result.subjects.map(subject => `
                             <tr>
                                 <td>${subject.name}</td>
                                 <td>${subject.grade}</td>
@@ -126,12 +127,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                     </tbody>
                 </table>
 
-                <button onclick="window.print()" class="print-button">Print Result</button>
+                <div class="button-group center-buttons">
+                    <button onclick="window.print()" class="btn print-btn">
+                        <i class="fas fa-print"></i> Print Result
+                    </button>
+                    <button onclick="searchAgain()" class="btn search-again-btn">
+                        <i class="fas fa-search"></i> Search Again
+                    </button>
+                </div>
             </div>
         `;
-
-        document.getElementById('resultDisplay').innerHTML = html;
-
     }
 
     function showLoading() {
@@ -153,10 +158,21 @@ document.addEventListener('DOMContentLoaded', async function () {
             <div class="result-container">
 
                 <div class="error-content">
-                    <h3>${message}</3>
+                    <h3>${message}</h3>
                 </div>
             </div>
         `;
         resultDisplay.innerHTML = html;
     }
 });
+
+function searchAgain() {
+    // Clear the result display
+    document.getElementById('resultDisplay').innerHTML = '';
+    
+    // Reset the form
+    document.getElementById('resultForm').reset();
+    
+    // Scroll back to the search form
+    document.querySelector('.search-container').scrollIntoView({ behavior: 'smooth' });
+}

@@ -262,6 +262,44 @@ select:focus {
     font-size: 0.85rem;
 }
 
+/* Button Group */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.center-buttons {
+    justify-content: center;
+    align-items: center;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.print-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.search-again-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
 /* Footer */
 .site-footer {
     text-align: center;

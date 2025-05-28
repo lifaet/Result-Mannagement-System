@@ -13,7 +13,58 @@ export async function onRequest(context) {
     const cache = caches.default
 
     const action = url.searchParams.get('action')
-    
+
+    // Add preload action to cache all data
+    if (action === 'preload') {
+      // First get all semesters
+      const params = new URLSearchParams({ key: apiKey, action: 'getSemesters' })
+      const semResponse = await fetch(`${SHEET_API}?${params.toString()}`)
+      const semData = await semResponse.json()
+
+      if (semData.status === 'success') {
+        // Cache semester list
+        await cache.put(
+          new Request(`${SHEET_API}?action=getSemesters`),
+          new Response(JSON.stringify(semData), {
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'max-age=30, stale-while-revalidate=60'
+            }
+          })
+        )
+
+        // Get and cache all results for each semester
+        for (const sem of semData.data) {
+          const allParams = new URLSearchParams({ 
+            key: apiKey, 
+            action: 'getAllResults',
+            semester: sem.value 
+          })
+          const resultsResponse = await fetch(`${SHEET_API}?${allParams.toString()}`)
+          const results = await resultsResponse.json()
+
+          if (results.status === 'success') {
+            for (const result of results.data) {
+              const cacheKey = new Request(`${SHEET_API}?id=${result.id}&semester=${sem.value}`)
+              await cache.put(cacheKey, new Response(JSON.stringify({
+                status: 'success',
+                data: result
+              }), {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Cache-Control': 'max-age=30, stale-while-revalidate=60'
+                }
+              }))
+            }
+          }
+        }
+        return new Response(JSON.stringify({ 
+          status: 'success', 
+          message: 'Cache preloaded successfully' 
+        }))
+      }
+    }
+
     // Handle semester list request
     if (action === 'getSemesters') {
       const cacheKey = new Request(`${SHEET_API}?action=getSemesters`)

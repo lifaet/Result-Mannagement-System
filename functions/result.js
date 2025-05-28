@@ -1,6 +1,6 @@
 export async function onRequest(context) {
   const CACHE_TTL = 60 // Cache for 1 minute
-  const SHEET_API = context.env.SHEET_API
+  const SHEET_API = "AKfycbyNBxT9kt8jZkiS7bt2kyYfVDLim52Bx3i3X1Cf_5hklcWaSlmVmohSAmI6To6IfK_Ztg"
   
   const { request } = context
   const url = new URL(request.url)

@@ -1,92 +1,16 @@
 export async function onRequest(context) {
   try {
     const scriptId = context.env.SHEET_API
-    if (!scriptId) {
-      throw new Error('Missing SHEET_API environment variable')
+    const apiKey = context.env.API_KEY
+
+    if (!scriptId || !apiKey) {
+      throw new Error('Missing environment variables')
     }
 
     const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`
     const { request } = context
     const url = new URL(request.url)
     const cache = caches.default
-
-    // Add preload action
-    const action = url.searchParams.get('action')
-    if (action === 'preload') {
-      try {
-        const apiUrl = new URL(SHEET_API)
-        apiUrl.searchParams.append('action', 'getAllResults')
-        
-        const apiResponse = await fetch(apiUrl)
-        if (!apiResponse.ok) {
-          throw new Error(`API responded with status ${apiResponse.status}`)
-        }
-        
-        const allResults = await apiResponse.json()
-        
-        // Cache each result individually
-        for (const result of allResults.data) {
-          const cacheKey = new Request(`${SHEET_API}?id=${result.id}&semester=${result.semester}`)
-          const response = new Response(JSON.stringify({
-            status: 'success',
-            data: result
-          }), {
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-              'Cache-Control': 'max-age=3600' // Cache for 1 hour
-            }
-          })
-          await cache.put(cacheKey, response.clone())
-        }
-        
-        return new Response(JSON.stringify({
-          status: 'success',
-          message: 'Cache preloaded successfully'
-        }), {
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          }
-        })
-      } catch (error) {
-        throw new Error(`Failed to preload cache: ${error.message}`)
-      }
-    }
-
-    // Handle semester list request
-    const semesterAction = url.searchParams.get('action')
-    if (semesterAction === 'getSemesters') {
-      const cacheKey = new Request(SHEET_API + '?action=getSemesters')
-      let response = await cache.match(cacheKey)
-      
-      if (!response) {
-        try {
-          const apiUrl = new URL(SHEET_API)
-          apiUrl.searchParams.append('action', 'getSemesters')
-          
-          const apiResponse = await fetch(apiUrl)
-          if (!apiResponse.ok) {
-            throw new Error(`API responded with status ${apiResponse.status}`)
-          }
-          
-          const data = await apiResponse.json()
-          response = new Response(JSON.stringify(data), {
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-              'Cache-Control': 'max-age=60'
-            }
-          })
-          
-          await cache.put(cacheKey, response.clone())
-        } catch (fetchError) {
-          throw fetchError
-        }
-      }
-      
-      return response
-    }
 
     // Handle result request
     const studentId = url.searchParams.get('id')
@@ -96,37 +20,24 @@ export async function onRequest(context) {
       throw new Error('Missing studentId or semester parameter')
     }
 
-    const cacheKey = new Request(`${SHEET_API}?id=${studentId}&semester=${semester}`)
+    // Add API key to all requests
+    const params = new URLSearchParams({
+      key: apiKey
+    });
+
+    const apiUrl = `${SHEET_API}?${params.toString()}&id=${studentId}&semester=${semester}`
+    const cacheKey = new Request(apiUrl)
     let response = await cache.match(cacheKey)
     
-    if (!response) {
-      try {
-        const apiUrl = new URL(SHEET_API)
-        apiUrl.searchParams.append('id', studentId)
-        apiUrl.searchParams.append('semester', semester)
-        
-        const apiResponse = await fetch(apiUrl)
-        if (!apiResponse.ok) {
-          throw new Error(`API responded with status ${apiResponse.status}`)
-        }
-        
-        const data = await apiResponse.json()
-        response = new Response(JSON.stringify(data), {
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Cache-Control': 'max-age=60'
-          }
-        })
-        
-        await cache.put(cacheKey, response.clone())
-      } catch (fetchError) {
-        throw fetchError
-      }
+    // If we have a cached response, serve it immediately
+    // but trigger a background refresh
+    if (response) {
+      context.waitUntil(updateCache(cache, cacheKey, SHEET_API, studentId, semester))
+      return response
     }
-    
-    return response
 
+    // If no cache, fetch directly
+    return await fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester)
   } catch (error) {
     return new Response(JSON.stringify({
       status: 'error',
@@ -138,5 +49,39 @@ export async function onRequest(context) {
         'Access-Control-Allow-Origin': '*'
       }
     })
+  }
+}
+
+// Helper function to fetch and cache response
+async function fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester) {
+  const apiUrl = new URL(SHEET_API)
+  apiUrl.searchParams.append('id', studentId)
+  apiUrl.searchParams.append('semester', semester)
+  
+  const apiResponse = await fetch(apiUrl)
+  if (!apiResponse.ok) {
+    throw new Error(`API responded with status ${apiResponse.status}`)
+  }
+  
+  const data = await apiResponse.json()
+  const response = new Response(JSON.stringify(data), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'max-age=60'
+    }
+  })
+  
+  await cache.put(cacheKey, response.clone())
+  return response
+}
+
+// Helper function to update cache in background
+async function updateCache(cache, cacheKey, SHEET_API, studentId, semester) {
+  try {
+    const freshResponse = await fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester)
+    return freshResponse
+  } catch (error) {
+    console.error('Background cache update failed:', error)
   }
 }

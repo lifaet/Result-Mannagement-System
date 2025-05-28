@@ -1,22 +1,49 @@
 function doGet(e) {
   try {
-    const { action, id: studentId, semester } = e.parameter || {};
+    const { action, id: studentId, semester, key } = e.parameter || {};
+
+    // Verify API key for getAllResults
+    if (action === 'getAllResults') {
+      const validKey = PropertiesService.getScriptProperties().getProperty('API_KEY')
+      if (key !== validKey) {
+        throw new Error('Unauthorized')
+      }
+    }
 
     if (action === 'getAllResults') {
-      // Return all results from the database
-      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Results')
-      const data = sheet.getDataRange().getValues()
-      const headers = data[0]
-      const results = data.slice(1).map(row => {
-        const result = {}
-        headers.forEach((header, index) => {
-          result[header] = row[index]
-        })
-        return result
-      })
+      const sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+      const allResults = [];
+      
+      // Get results from all semester sheets
+      sheets.forEach(sheet => {
+        const sheetName = sheet.getName();
+        // Skip hidden/system sheets that start with _
+        if (sheetName.startsWith('_')) return;
+        
+        const data = sheet.getDataRange().getValues();
+        const headers = data[0];
+        
+        // Process each student in the semester
+        data.slice(1).forEach(row => {
+          if (!row[0]) return; // Skip empty rows
+          
+          allResults.push({
+            id: row[0],
+            name: row[1],
+            department: row[2],
+            cgpa: formatNumber(row[3]),
+            agpa: formatNumber(row[4]),
+            lg: row[5],
+            result: row[6],
+            semester: sheetName,
+            subjects: extractSubjects(row)
+          });
+        });
+      });
+
       return ContentService.createTextOutput(JSON.stringify({
         status: 'success',
-        data: results
+        data: allResults
       })).setMimeType(ContentService.MimeType.JSON)
     }
 
@@ -37,7 +64,10 @@ function doGet(e) {
     return createSuccessResponse(formatResult(result));
 
   } catch (error) {
-    return createErrorResponse(500, error.toString());
+    return createErrorResponse(
+      error.message === 'Unauthorized' ? 401 : 500, 
+      error.toString()
+    )
   }
 }
 

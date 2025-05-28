@@ -64,3 +64,72 @@ async function updateCache(SHEET_API, cacheKey, cache, params) {
     console.error('Background cache update failed:', error)
   }
 }
+
+// Preload function to cache semesters and all results
+export async function preloadCache(context) {
+  try {
+    const scriptId = context.env.SHEET_API
+    if (!scriptId) throw new Error('Missing SHEET_API environment variable')
+
+    const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`
+    const { request } = context
+    const url = new URL(request.url)
+    const cache = caches.default
+
+    const action = url.searchParams.get('action')
+
+    // Add preload functionality
+    if (action === 'preload') {
+      console.log('Starting preload...')
+      
+      // First cache semesters
+      const semesterResponse = await fetch(`${SHEET_API}?action=getSemesters`)
+      const semesterData = await semesterResponse.json()
+      
+      if (semesterData.status === 'success') {
+        // Cache semester list
+        const semesterCacheKey = new Request(`${SHEET_API}?action=getSemesters`)
+        await cache.put(semesterCacheKey, new Response(JSON.stringify(semesterData), {
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'max-age=30, stale-while-revalidate=60'
+          }
+        }))
+        
+        // Get all results for each semester
+        const allResults = await fetch(`${SHEET_API}?action=getAllResults`)
+        const resultsData = await allResults.json()
+        
+        if (resultsData.status === 'success') {
+          // Cache each result
+          for (const result of resultsData.data) {
+            const resultCacheKey = new Request(`${SHEET_API}?id=${result.id}&semester=${result.semester}`)
+            await cache.put(resultCacheKey, new Response(JSON.stringify({
+              status: 'success',
+              data: result
+            }), {
+              headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'max-age=30, stale-while-revalidate=60'
+              }
+            }))
+            console.log(`Cached result for: ${result.id}`)
+          }
+        }
+        
+        return new Response(JSON.stringify({
+          status: 'success',
+          message: 'Cache preloaded successfully'
+        }))
+      }
+    }
+  } catch (error) {
+    return new Response(JSON.stringify({
+      status: 'error',
+      error: error.message
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+}

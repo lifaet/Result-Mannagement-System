@@ -12,7 +12,48 @@ export async function onRequest(context) {
     const url = new URL(request.url)
     const cache = caches.default
 
-    // Handle result request
+    // Handle semester list request
+    const action = url.searchParams.get('action')
+    if (action === 'getSemesters') {
+      const cacheKey = new Request(`${SHEET_API}?action=getSemesters`)
+      let response = await cache.match(cacheKey)
+
+      if (response) {
+        // Update cache in background if we have cached data
+        context.waitUntil(updateSemesterCache(cache, cacheKey, SHEET_API, apiKey))
+        return response
+      }
+
+      // If no cache, fetch directly
+      return await fetchAndCacheSemesters(cache, cacheKey, SHEET_API, apiKey)
+    }
+
+    // Handle getAllResults request for initial cache population
+    if (action === 'getAllResults') {
+      const params = new URLSearchParams({ key: apiKey, action: 'getAllResults' })
+      const apiUrl = `${SHEET_API}?${params.toString()}`
+      const response = await fetch(apiUrl)
+      const data = await response.json()
+
+      if (data.status === 'success') {
+        // Cache each result individually
+        for (const result of data.data) {
+          const resultCacheKey = new Request(`${SHEET_API}?id=${result.id}&semester=${result.semester}`)
+          await cache.put(resultCacheKey, new Response(JSON.stringify({
+            status: 'success',
+            data: result
+          }), {
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'max-age=3600'
+            }
+          }))
+        }
+        return new Response(JSON.stringify({ status: 'success', message: 'Cache updated' }))
+      }
+    }
+
+    // Handle individual result request
     const studentId = url.searchParams.get('id')
     const semester = url.searchParams.get('semester')
     
@@ -20,24 +61,15 @@ export async function onRequest(context) {
       throw new Error('Missing studentId or semester parameter')
     }
 
-    // Add API key to all requests
-    const params = new URLSearchParams({
-      key: apiKey
-    });
-
-    const apiUrl = `${SHEET_API}?${params.toString()}&id=${studentId}&semester=${semester}`
-    const cacheKey = new Request(apiUrl)
+    const cacheKey = new Request(`${SHEET_API}?id=${studentId}&semester=${semester}`)
     let response = await cache.match(cacheKey)
     
-    // If we have a cached response, serve it immediately
-    // but trigger a background refresh
     if (response) {
-      context.waitUntil(updateCache(cache, cacheKey, SHEET_API, studentId, semester))
+      context.waitUntil(updateCache(cache, cacheKey, SHEET_API, studentId, semester, apiKey))
       return response
     }
 
-    // If no cache, fetch directly
-    return await fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester)
+    return await fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester, apiKey)
   } catch (error) {
     return new Response(JSON.stringify({
       status: 'error',
@@ -52,11 +84,9 @@ export async function onRequest(context) {
   }
 }
 
-// Helper function to fetch and cache response
-async function fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester) {
-  const apiUrl = new URL(SHEET_API)
-  apiUrl.searchParams.append('id', studentId)
-  apiUrl.searchParams.append('semester', semester)
+async function fetchAndCacheSemesters(cache, cacheKey, SHEET_API, apiKey) {
+  const params = new URLSearchParams({ key: apiKey, action: 'getSemesters' })
+  const apiUrl = `${SHEET_API}?${params.toString()}`
   
   const apiResponse = await fetch(apiUrl)
   if (!apiResponse.ok) {
@@ -68,7 +98,7 @@ async function fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester) {
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'max-age=60'
+      'Cache-Control': 'max-age=3600'
     }
   })
   
@@ -76,11 +106,43 @@ async function fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester) {
   return response
 }
 
-// Helper function to update cache in background
-async function updateCache(cache, cacheKey, SHEET_API, studentId, semester) {
+async function updateSemesterCache(cache, cacheKey, SHEET_API, apiKey) {
   try {
-    const freshResponse = await fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester)
-    return freshResponse
+    return await fetchAndCacheSemesters(cache, cacheKey, SHEET_API, apiKey)
+  } catch (error) {
+    console.error('Background semester cache update failed:', error)
+  }
+}
+
+async function fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester, apiKey) {
+  const params = new URLSearchParams({
+    key: apiKey,
+    id: studentId,
+    semester: semester
+  })
+  const apiUrl = `${SHEET_API}?${params.toString()}`
+  
+  const apiResponse = await fetch(apiUrl)
+  if (!apiResponse.ok) {
+    throw new Error(`API responded with status ${apiResponse.status}`)
+  }
+  
+  const data = await apiResponse.json()
+  const response = new Response(JSON.stringify(data), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'max-age=3600'
+    }
+  })
+  
+  await cache.put(cacheKey, response.clone())
+  return response
+}
+
+async function updateCache(cache, cacheKey, SHEET_API, studentId, semester, apiKey) {
+  try {
+    return await fetchAndCache(cache, cacheKey, SHEET_API, studentId, semester, apiKey)
   } catch (error) {
     console.error('Background cache update failed:', error)
   }

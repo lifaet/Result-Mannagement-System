@@ -4,6 +4,25 @@
 function doGet(e) {
   try {
     const { action, id: studentId, semester } = e.parameter || {};
+
+    if (action === 'getAllResults') {
+      // Return all results from the database
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Results')
+      const data = sheet.getDataRange().getValues()
+      const headers = data[0]
+      const results = data.slice(1).map(row => {
+        const result = {}
+        headers.forEach((header, index) => {
+          result[header] = row[index]
+        })
+        return result
+      })
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'success',
+        data: results
+      })).setMimeType(ContentService.MimeType.JSON)
+    }
+
     const result = getStudentResult(studentId, semester);
 
     if (action === 'getSemesters') {

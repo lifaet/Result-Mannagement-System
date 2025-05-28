@@ -9,10 +9,54 @@ export async function onRequest(context) {
     const { request } = context
     const url = new URL(request.url)
     const cache = caches.default
-    
-    // Handle semester list request
+
+    // Add preload action
     const action = url.searchParams.get('action')
-    if (action === 'getSemesters') {
+    if (action === 'preload') {
+      try {
+        const apiUrl = new URL(SHEET_API)
+        apiUrl.searchParams.append('action', 'getAllResults')
+        
+        const apiResponse = await fetch(apiUrl)
+        if (!apiResponse.ok) {
+          throw new Error(`API responded with status ${apiResponse.status}`)
+        }
+        
+        const allResults = await apiResponse.json()
+        
+        // Cache each result individually
+        for (const result of allResults.data) {
+          const cacheKey = new Request(`${SHEET_API}?id=${result.id}&semester=${result.semester}`)
+          const response = new Response(JSON.stringify({
+            status: 'success',
+            data: result
+          }), {
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Cache-Control': 'max-age=3600' // Cache for 1 hour
+            }
+          })
+          await cache.put(cacheKey, response.clone())
+        }
+        
+        return new Response(JSON.stringify({
+          status: 'success',
+          message: 'Cache preloaded successfully'
+        }), {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        })
+      } catch (error) {
+        throw new Error(`Failed to preload cache: ${error.message}`)
+      }
+    }
+
+    // Handle semester list request
+    const semesterAction = url.searchParams.get('action')
+    if (semesterAction === 'getSemesters') {
       const cacheKey = new Request(SHEET_API + '?action=getSemesters')
       let response = await cache.match(cacheKey)
       

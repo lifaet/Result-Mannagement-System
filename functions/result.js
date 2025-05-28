@@ -1,18 +1,14 @@
 export async function onRequest(context) {
   try {
     const scriptId = context.env.SHEET_API
-    const AllDataAPI = context.env.AllDataAPI
     if (!scriptId) throw new Error('Missing SHEET_API environment variable')
 
     const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`
     const { request } = context
     const url = new URL(request.url)
     const cache = caches.default
-
-    // Get requested action/params
     const action = url.searchParams.get('action')
 
-    // Handle preload separately
     if (action === 'preload') {
       console.log('Starting cache preload...')
       
@@ -21,52 +17,61 @@ export async function onRequest(context) {
       if (!semResponse.ok) throw new Error('Failed to fetch semesters')
       
       const semesterData = await semResponse.json()
-      if (semesterData.status === 'success') {
-        const semCacheKey = new Request(`${SHEET_API}?action=getSemesters`)
-        await cache.put(semCacheKey, new Response(JSON.stringify(semesterData), {
+      console.log('Semester data:', semesterData) // Debug log
+
+      if (!semesterData || !semesterData.status === 'success' || !semesterData.data) {
+        throw new Error('Invalid semester data received')
+      }
+
+      const semCacheKey = new Request(`${SHEET_API}?action=getSemesters`)
+      await cache.put(semCacheKey, new Response(JSON.stringify(semesterData), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'max-age=30, stale-while-revalidate=60'
+        }
+      }))
+      console.log(`${semesterData.data.length} semesters cached`)
+
+      // 2. Cache all results
+      const allResponse = await fetch(`${SHEET_API}?action=getAllResults`)
+      if (!allResponse.ok) throw new Error('Failed to fetch all results')
+      
+      const allData = await allResponse.json()
+      console.log('All results data:', allData) // Debug log
+
+      if (!allData || !allData.status === 'success' || !Array.isArray(allData.data)) {
+        throw new Error('Invalid results data received')
+      }
+
+      let cached = 0
+      for (const result of allData.data) {
+        if (!result.id || !result.semester) continue; // Skip invalid entries
+        
+        const resultKey = new Request(`${SHEET_API}?id=${result.id}&semester=${result.semester}`)
+        await cache.put(resultKey, new Response(JSON.stringify({
+          status: 'success',
+          data: result
+        }), {
           headers: {
             'Content-Type': 'application/json',
             'Cache-Control': 'max-age=30, stale-while-revalidate=60'
           }
         }))
-        console.log('Semesters cached')
-
-        // 2. Cache all results
-        const allResponse = await fetch(`${SHEET_API}?action=getAllResults`)
-        if (!allResponse.ok) throw new Error('Failed to fetch all results')
-        
-        const allData = await allResponse.json()
-        if (allData.status === 'success' && Array.isArray(allData.data)) {
-          let cached = 0
-          for (const result of allData.data) {
-            const resultKey = new Request(`${SHEET_API}?id=${result.id}&semester=${result.semester}`)
-            await cache.put(resultKey, new Response(JSON.stringify({
-              status: 'success',
-              data: result
-            }), {
-              headers: {
-                'Content-Type': 'application/json',
-                'Cache-Control': 'max-age=30, stale-while-revalidate=60'
-              }
-            }))
-            cached++
-          }
-          console.log(`${cached} results cached`)
-        }
-
-        return new Response(JSON.stringify({
-          status: 'success',
-          message: 'Cache preloaded successfully',
-          cached: {
-            semesters: semesterData.data.length,
-            results: allData.data.length
-          }
-        }), {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
+        cached++
       }
+
+      return new Response(JSON.stringify({
+        status: 'success',
+        message: 'Cache preloaded successfully',
+        cached: {
+          semesters: semesterData.data.length,
+          results: cached
+        }
+      }), {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
     }
 
     // Handle regular requests as before

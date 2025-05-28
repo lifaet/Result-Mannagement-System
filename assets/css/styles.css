@@ -417,3 +417,15 @@ select:focus {
         margin: 1rem;
     }
 }
+
+.header-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.header-link:hover {
+    opacity: 0.9;
+}

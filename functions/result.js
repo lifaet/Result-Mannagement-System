@@ -10,18 +10,20 @@ export async function onRequest(context) {
 
     // Get requested action/params
     const action = url.searchParams.get('action')
-    const studentId = url.searchParams.get('id')
-    const semester = url.searchParams.get('semester')
 
     // Handle preload action
     if (action === 'preload') {
-      console.log('Starting cache preload...')
-      
-      // Cache semesters
-      const semesterResponse = await fetch(`${SHEET_API}?action=getSemesters`)
-      const semesterData = await semesterResponse.json()
-      
-      if (semesterData.status === 'success') {
+      try {
+        // Get semesters
+        const semParams = new URLSearchParams({ action: 'getSemesters' })
+        const semesterResponse = await fetch(`${SHEET_API}?${semParams.toString()}`)
+        const semesterData = await semesterResponse.json()
+
+        if (!semesterData || semesterData.status !== 'success') {
+          throw new Error('Failed to fetch semesters')
+        }
+
+        // Cache semester list
         const semesterCacheKey = new Request(`${SHEET_API}?action=getSemesters`)
         await cache.put(semesterCacheKey, new Response(JSON.stringify(semesterData), {
           headers: {
@@ -29,44 +31,57 @@ export async function onRequest(context) {
             'Cache-Control': 'max-age=30, stale-while-revalidate=60'
           }
         }))
-        console.log('✓ Semesters cached')
-        
-        // Cache all results
-        const allResults = await fetch(`${SHEET_API}?action=getAllResults`)
-        const resultsData = await allResults.json()
-        
-        if (resultsData.status === 'success') {
-          let count = 0
-          for (const result of resultsData.data) {
-            const resultCacheKey = new Request(`${SHEET_API}?id=${result.id}&semester=${result.semester}`)
-            await cache.put(resultCacheKey, new Response(JSON.stringify({
-              status: 'success',
-              data: result
-            }), {
-              headers: {
-                'Content-Type': 'application/json',
-                'Cache-Control': 'max-age=30, stale-while-revalidate=60'
-              }
-            }))
-            count++
-          }
-          console.log(`✓ ${count} results cached`)
-          
-          return new Response(JSON.stringify({
-            status: 'success',
-            message: 'Cache preloaded successfully',
-            stats: {
-              semesters: semesterData.data.length,
-              results: count
-            }
-          }), {
-            headers: { 'Content-Type': 'application/json' }
-          })
+
+        // Get all results
+        const resultParams = new URLSearchParams({ action: 'getAllResults' })
+        const resultsResponse = await fetch(`${SHEET_API}?${resultParams.toString()}`)
+        const resultsData = await resultsResponse.json()
+
+        if (!resultsData || resultsData.status !== 'success') {
+          throw new Error('Failed to fetch results')
         }
+
+        // Cache each result
+        let count = 0
+        for (const result of resultsData.data) {
+          const resultParams = new URLSearchParams({
+            id: result.id,
+            semester: result.semester
+          })
+          const resultCacheKey = new Request(`${SHEET_API}?${resultParams.toString()}`)
+          
+          await cache.put(resultCacheKey, new Response(JSON.stringify({
+            status: 'success',
+            data: result
+          }), {
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'max-age=30, stale-while-revalidate=60'
+            }
+          }))
+          count++
+        }
+
+        return new Response(JSON.stringify({
+          status: 'success',
+          message: 'Cache preloaded successfully',
+          stats: {
+            semesters: semesterData.data.length,
+            results: count
+          }
+        }), {
+          headers: { 'Content-Type': 'application/json' }
+        })
+
+      } catch (preloadError) {
+        throw new Error(`Preload failed: ${preloadError.message}`)
       }
     }
 
     // Handle regular requests
+    const studentId = url.searchParams.get('id')
+    const semester = url.searchParams.get('semester')
+
     const cacheKey = new Request(
       action === 'getSemesters' ? `${SHEET_API}?action=getSemesters` :
       action === 'getAllResults' ? `${SHEET_API}?action=getAllResults` :

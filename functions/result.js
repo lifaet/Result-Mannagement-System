@@ -11,6 +11,65 @@ export async function onRequest(context) {
 
     // Get requested action/params
     const action = url.searchParams.get('action')
+
+    // Handle preload separately
+    if (action === 'preload') {
+      console.log('Starting cache preload...')
+      
+      // 1. Cache semesters
+      const semResponse = await fetch(`${SHEET_API}?action=getSemesters`)
+      if (!semResponse.ok) throw new Error('Failed to fetch semesters')
+      
+      const semesterData = await semResponse.json()
+      if (semesterData.status === 'success') {
+        const semCacheKey = new Request(`${SHEET_API}?action=getSemesters`)
+        await cache.put(semCacheKey, new Response(JSON.stringify(semesterData), {
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'max-age=30, stale-while-revalidate=60'
+          }
+        }))
+        console.log('Semesters cached')
+
+        // 2. Cache all results
+        const allResponse = await fetch(`${SHEET_API}?action=getAllResults`)
+        if (!allResponse.ok) throw new Error('Failed to fetch all results')
+        
+        const allData = await allResponse.json()
+        if (allData.status === 'success' && Array.isArray(allData.data)) {
+          let cached = 0
+          for (const result of allData.data) {
+            const resultKey = new Request(`${SHEET_API}?id=${result.id}&semester=${result.semester}`)
+            await cache.put(resultKey, new Response(JSON.stringify({
+              status: 'success',
+              data: result
+            }), {
+              headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'max-age=30, stale-while-revalidate=60'
+              }
+            }))
+            cached++
+          }
+          console.log(`${cached} results cached`)
+        }
+
+        return new Response(JSON.stringify({
+          status: 'success',
+          message: 'Cache preloaded successfully',
+          cached: {
+            semesters: semesterData.data.length,
+            results: allData.data.length
+          }
+        }), {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+      }
+    }
+
+    // Handle regular requests as before
     const studentId = url.searchParams.get('id')
     const semester = url.searchParams.get('semester')
 
@@ -33,6 +92,7 @@ export async function onRequest(context) {
     return await fetchAndCache(SHEET_API, cacheKey, cache, url.searchParams)
 
   } catch (error) {
+    console.error('Error:', error)
     return new Response(JSON.stringify({
       status: 'error',
       error: error.message

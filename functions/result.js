@@ -54,9 +54,12 @@ export async function onRequest(context) {
 }
 
 async function fetchAndValidateCache(cache, cacheKey, fetchFn) {
+  // Define cachedResponse in outer scope
+  let cachedResponse = null;
+  
   try {
     // Try to get from cache
-    const cachedResponse = await cache.match(cacheKey)
+    cachedResponse = await cache.match(cacheKey)
     
     // Always fetch fresh data
     const fetchPromise = fetchFn().then(async (response) => {
@@ -86,17 +89,12 @@ async function fetchAndValidateCache(cache, cacheKey, fetchFn) {
         throw new Error('Cache verification failed')
       }
       
-      // Log successful cache
       console.log(`Cache updated successfully for: ${cacheKey.url}`)
-      console.log(`Cache time: ${freshResponse.headers.get('X-Cache-Time')}`)
-      
       return freshResponse
     })
 
     if (cachedResponse) {
-      // Log cache hit
       console.log(`Cache hit for: ${cacheKey.url}`)
-      console.log(`Last cached: ${cachedResponse.headers.get('X-Cache-Time')}`)
       
       // Update cache in background
       context.waitUntil(
@@ -107,13 +105,12 @@ async function fetchAndValidateCache(cache, cacheKey, fetchFn) {
       return cachedResponse
     }
 
-    // If no cache, wait for fresh data
     console.log(`Cache miss for: ${cacheKey.url}, fetching fresh data...`)
     return await fetchPromise
 
   } catch (error) {
     console.error(`Cache error for ${cacheKey.url}:`, error)
-    // If we have cached data, use it despite the error
+    // Now cachedResponse is accessible here
     if (cachedResponse) {
       console.log(`Serving stale cache for: ${cacheKey.url}`)
       return cachedResponse

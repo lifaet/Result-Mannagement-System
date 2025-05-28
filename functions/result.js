@@ -54,34 +54,70 @@ export async function onRequest(context) {
 }
 
 async function fetchAndValidateCache(cache, cacheKey, fetchFn) {
-  // Try to get from cache
-  const cachedResponse = await cache.match(cacheKey)
-  
-  // Always fetch fresh data
-  const fetchPromise = fetchFn().then(async (response) => {
-    if (!response.ok) throw new Error(`API responded with status ${response.status}`)
+  try {
+    // Try to get from cache
+    const cachedResponse = await cache.match(cacheKey)
     
-    const data = await response.clone().json()
-    const freshResponse = new Response(JSON.stringify(data), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'max-age=30, stale-while-revalidate=60'
+    // Always fetch fresh data
+    const fetchPromise = fetchFn().then(async (response) => {
+      if (!response.ok) throw new Error(`API responded with status ${response.status}`)
+      
+      const data = await response.clone().json()
+      
+      // Validate data structure
+      if (!data || data.status !== 'success') {
+        throw new Error('Invalid data structure from API')
       }
+      
+      const freshResponse = new Response(JSON.stringify(data), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'max-age=30, stale-while-revalidate=60',
+          'X-Cache-Time': new Date().toISOString()
+        }
+      })
+      
+      // Update cache and verify
+      await cache.put(cacheKey, freshResponse.clone())
+      const verifyCached = await cache.match(cacheKey)
+      
+      if (!verifyCached) {
+        throw new Error('Cache verification failed')
+      }
+      
+      // Log successful cache
+      console.log(`Cache updated successfully for: ${cacheKey.url}`)
+      console.log(`Cache time: ${freshResponse.headers.get('X-Cache-Time')}`)
+      
+      return freshResponse
     })
-    
-    // Update cache with fresh data
-    await cache.put(cacheKey, freshResponse.clone())
-    return freshResponse
-  })
 
-  // If we have cached data, use it while fetching fresh data in background
-  if (cachedResponse) {
-    // Update cache in background
-    context.waitUntil(fetchPromise.catch(console.error))
-    return cachedResponse
+    if (cachedResponse) {
+      // Log cache hit
+      console.log(`Cache hit for: ${cacheKey.url}`)
+      console.log(`Last cached: ${cachedResponse.headers.get('X-Cache-Time')}`)
+      
+      // Update cache in background
+      context.waitUntil(
+        fetchPromise.catch(error => {
+          console.error(`Background cache update failed: ${error.message}`)
+        })
+      )
+      return cachedResponse
+    }
+
+    // If no cache, wait for fresh data
+    console.log(`Cache miss for: ${cacheKey.url}, fetching fresh data...`)
+    return await fetchPromise
+
+  } catch (error) {
+    console.error(`Cache error for ${cacheKey.url}:`, error)
+    // If we have cached data, use it despite the error
+    if (cachedResponse) {
+      console.log(`Serving stale cache for: ${cacheKey.url}`)
+      return cachedResponse
+    }
+    throw error
   }
-
-  // If no cache, wait for fresh data
-  return await fetchPromise
 }

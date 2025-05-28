@@ -1,6 +1,7 @@
 export async function onRequest(context) {
   const CACHE_TTL = 60 // Cache for 1 minute
-  const SHEET_API = "AKfycbyNBxT9kt8jZkiS7bt2kyYfVDLim52Bx3i3X1Cf_5hklcWaSlmVmohSAmI6To6IfK_Ztg"
+  // Remove hardcoded API key and use environment variable
+  const SHEET_API = `https://script.google.com/macros/s/${context.env.SHEET_API}/exec`
   
   const { request } = context
   const url = new URL(request.url)
@@ -8,7 +9,7 @@ export async function onRequest(context) {
   // Check if it's a semester list request
   const action = url.searchParams.get('action')
   if (action === 'getSemesters') {
-    return await handleSemesterRequest(context)
+    return await handleSemesterRequest(context, SHEET_API)
   }
 
   // Handle result request
@@ -25,14 +26,14 @@ export async function onRequest(context) {
   let response = await cache.match(cacheKey)
   
   if (response) {
-    context.waitUntil(updateCache(cache, cacheKey, studentId, semester, context))
+    context.waitUntil(updateCache(cache, cacheKey, studentId, semester, context, SHEET_API))
     return response
   }
 
-  return await fetchAndCache(cache, cacheKey, studentId, semester, context)
+  return await fetchAndCache(cache, cacheKey, studentId, semester, context, SHEET_API)
 }
 
-async function handleSemesterRequest(context) {
+async function handleSemesterRequest(context, SHEET_API) {
   const cache = caches.default
   const cacheKey = 'semesters'
 
@@ -44,7 +45,7 @@ async function handleSemesterRequest(context) {
 
   try {
     // Fetch semesters from API
-    const response = await fetch(`${context.env.SHEET_API}?action=getSemesters`)
+    const response = await fetch(`${SHEET_API}?action=getSemesters`)
     const results = await response.json()
     
     const newResponse = new Response(JSON.stringify(results), {
@@ -73,13 +74,13 @@ async function handleSemesterRequest(context) {
   }
 }
 
-async function updateCache(cache, cacheKey, studentId, semester, context) {
-  return await fetchAndCache(cache, cacheKey, studentId, semester, context)
+async function updateCache(cache, cacheKey, studentId, semester, context, SHEET_API) {
+  return await fetchAndCache(cache, cacheKey, studentId, semester, context, SHEET_API)
 }
 
-async function fetchAndCache(cache, cacheKey, studentId, semester, context) {
+async function fetchAndCache(cache, cacheKey, studentId, semester, context, SHEET_API) {
   try {
-    const apiUrl = `${context.env.SHEET_API}?id=${studentId}&semester=${semester}`
+    const apiUrl = `${SHEET_API}?id=${studentId}&semester=${semester}`
     const response = await fetch(apiUrl)
     const results = await response.json()
     

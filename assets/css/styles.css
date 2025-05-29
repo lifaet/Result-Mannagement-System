@@ -430,14 +430,6 @@ select:focus {
     opacity: 0.9;
 }
 
-.last-updated {
-    text-align: center;
-    color: #666;
-    font-size: 0.8em;
-    margin: 20px 0;
-    font-style: italic;
-}
-
 .update-timestamp {
     text-align: center;
     color: #666;

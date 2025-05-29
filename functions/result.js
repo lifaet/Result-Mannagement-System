@@ -28,7 +28,7 @@ export async function onRequest(context) {
     // Fetch from origin if cache is empty
     if (!cache) {
       const SHEET_API = `https://script.google.com/macros/s/${env.SHEET_API}/exec`;
-      const response = await fetch(`${SHEET_API}?action=getAllResults`);
+      const response = await fetch(`${SHEET_API}?action=AKfycbweayPsZkobJlPVTkAsRd7DuvZqjwE9nBBqhOvsHkZ3G2xzELiFA64dpcIlInAyyi_Cmg`);
       const data = await response.json();
       if (data.status === 'success') {
         cache = data.data;

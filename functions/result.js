@@ -1,83 +1,68 @@
-// Cache storage
-let cache = null;
-
-// Standard response headers
-const corsHeaders = {
+// Configuration
+const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json'
 };
 
-// Main request handler for Pages Functions
-export async function onRequest(context) {
-  const { request, env } = context;
-  const headers = corsHeaders;
+// In-memory cache for storing API data
+let resultCache = null;
 
+// Helper functions
+async function initializeCache(env) {
+  const response = await fetch(env.SHEET_API);
+  const data = await response.json();
+  resultCache = data.data;
+}
+
+function getSemestersList(results) {
+  const uniqueSemesters = [...new Set(results.map(r => r.semester))];
+  return uniqueSemesters.map(sem => ({
+    value: sem,
+    label: sem
+  }));
+}
+
+function findStudentResult(results, studentId, semester) {
+  return results.find(r => r.id === studentId && r.semester === semester);
+}
+
+// Response handlers
+function successResponse(data) {
+  return new Response(
+    JSON.stringify({ status: 'success', data }), 
+    { headers: CORS_HEADERS }
+  );
+}
+
+function errorResponse(message, status = 400) {
+  return new Response(
+    JSON.stringify({ status: 'error', message }), 
+    { status, headers: CORS_HEADERS }
+  );
+}
+
+// Main request handler
+export async function onRequest(context) {
   try {
-    const url = new URL(request.url);
+    if (!resultCache) await initializeCache(context.env);
+    if (!Array.isArray(resultCache)) throw new Error('Invalid cache');
+
+    const url = new URL(context.request.url);
     const action = url.searchParams.get('action');
     const studentId = url.searchParams.get('id');
     const semester = url.searchParams.get('semester');
 
-    // Fetch from origin and initialize cache
-    if (!cache) {
-      const response = await fetch(`${env.SHEET_API}`);
-      const data = await response.json();
-      
-      if (!data || data.status !== 'success' || !data.data) {
-        throw new Error('Failed to fetch data from origin');
-      }
-      
-      cache = data.data;
-    }
-
-    // Verify cache exists before processing requests
-    if (!cache || !Array.isArray(cache)) {
-      throw new Error('Cache not properly initialized');
-    }
-
-    // Handle requests
     if (action === 'getSemesters') {
-      const semestersList = [...new Set(cache.map(r => r.semester))].filter(Boolean);
-      const semesters = semestersList.map(sem => ({
-        value: sem,
-        label: sem
-      }));
-
-      return new Response(JSON.stringify({
-        status: 'success',
-        data: semesters
-      }), { headers });
+      return successResponse(getSemestersList(resultCache));
     }
 
     if (studentId && semester) {
-      const result = cache.find(r => r.id === studentId && r.semester === semester);
-      if (!result) {
-        return new Response(JSON.stringify({
-          status: 'error',
-          message: 'Result not found'
-        }), { status: 404, headers });
-      }
-      return new Response(JSON.stringify({
-        status: 'success',
-        data: result
-      }), { headers });
+      const result = findStudentResult(resultCache, studentId, semester);
+      return result ? successResponse(result) : errorResponse('Result not found', 404);
     }
 
-    return new Response(JSON.stringify({
-      status: 'error',
-      message: 'Invalid request'
-    }), { status: 400, headers });
-
+    return errorResponse('Invalid request', 400);
   } catch (error) {
-    return new Response(JSON.stringify({
-      status: 'error',
-      message: error.message || 'Internal server error',
-      timestamp: new Date().toISOString()
-    }), { 
-      status: 500, 
-      headers 
-    });
+    return errorResponse(error.message, 500);
   }
 }

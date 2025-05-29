@@ -35,7 +35,11 @@ async function onRequest(context) {
 
     // Handle force refresh
     if (action === 'refresh') {
-      await initializeCache(context.env);
+      const updated = await initializeCache(context.env);
+      return successResponse({
+        updated,
+        lastUpdated: new Date(resultCache.lastUpdated).toISOString()
+      });
     }
     // Cache refresh check
     if (Date.now() - resultCache.lastUpdated > 12 * 60 * 60 * 1000) {

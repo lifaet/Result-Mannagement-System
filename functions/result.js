@@ -16,25 +16,38 @@ async function initializeCache(env) {
   const response = await fetch(env.SHEET_API);
   const data = await response.json();
   
-  // Store data with timestamp and hash
+  if (!data?.status === 'success' || !data?.data) {
+    throw new Error('Invalid response from origin');
+  }
+  
   resultCache.data = data.data;
   resultCache.lastUpdated = Date.now();
   resultCache.hash = await generateHash(data.data);
 }
 
 async function checkAndUpdateCache(env) {
-  const response = await fetch(env.SHEET_API);
-  const data = await response.json();
-  const newHash = await generateHash(data.data);
+  try {
+    const response = await fetch(env.SHEET_API);
+    const data = await response.json();
+    
+    if (!data?.status === 'success' || !data?.data) {
+      return false;
+    }
 
-  // Update cache if hash differs
-  if (newHash !== resultCache.hash) {
-    resultCache.data = data.data;
-    resultCache.lastUpdated = Date.now();
-    resultCache.hash = newHash;
-    return true;
+    const newHash = await generateHash(data.data);
+
+    // Update cache if hash differs
+    if (newHash !== resultCache.hash) {
+      resultCache.data = data.data;
+      resultCache.lastUpdated = Date.now();
+      resultCache.hash = newHash;
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Cache update failed:', error);
+    return false;
   }
-  return false;
 }
 
 async function generateHash(data) {
@@ -79,9 +92,17 @@ function errorResponse(message, status = 400) {
 // Main request handler
 export async function onRequest(context) {
   try {
-    // Initialize cache if empty
-    if (!resultCache.data) await initializeCache(context.env);
-    if (!Array.isArray(resultCache.data)) throw new Error('Invalid cache');
+    // Initialize or update cache
+    if (!resultCache.data) {
+      await initializeCache(context.env);
+    } else if (Date.now() - resultCache.lastUpdated > 60 * 1000) {
+      // Only attempt update if more than 1 minute has passed
+      await checkAndUpdateCache(context.env);
+    }
+
+    if (!Array.isArray(resultCache.data)) {
+      throw new Error('Invalid cache state');
+    }
 
     const url = new URL(context.request.url);
     const action = url.searchParams.get('action');
@@ -113,6 +134,6 @@ export async function onRequest(context) {
 
     return errorResponse('Invalid request', 400);
   } catch (error) {
-    return errorResponse(error.message, 500);
+    return errorResponse(error.message || 'Server error', 500);
   }
 }

@@ -32,37 +32,63 @@ document.addEventListener('DOMContentLoaded', async function () {
             //     timestamp.innerHTML = `Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}`;
             //     footer.parentNode.insertBefore(timestamp, footer);
             // }
-                if (result.lastUpdated) {
-                    const footer = document.querySelector('footer');
-                    if (!footer) {
-                        return;
+
+            // Modified timestamp creation with refresh button
+            
+            if (result.lastUpdated) {
+                const footer = document.querySelector('footer');
+                const timestampContainer = document.createElement('div');
+                timestampContainer.classList.add('update-timestamp');
+                timestampContainer.innerHTML = `
+                    Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}
+                    <button id="refreshCache" class="refresh-btn">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                `;
+                footer.parentNode.insertBefore(timestampContainer, footer);
+
+                // Add refresh functionality
+                const refreshBtn = document.getElementById('refreshCache');
+                refreshBtn.addEventListener('click', async function () {
+                    const btn = this;
+                    btn.disabled = true;
+                    btn.classList.add('spinning');
+
+                    try {
+                        const response = await fetch(`${api}?action=refresh`);
+                        const result = await response.json();
+
+                        if (result.status === 'success') {
+                            // Update timestamp
+                            const timestamp = btn.parentElement;
+                            timestamp.innerHTML = `
+                                Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}
+                                <button id="refreshCache" class="refresh-btn">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            `;
+                            // Reattach event listener to new button
+                            document.getElementById('refreshCache').addEventListener('click', arguments.callee);
+                        } else {
+                            console.error('Cache refresh failed:', result.message);
+                        }
+                    } catch (error) {
+                        console.error('Error refreshing cache:', error);
+                    } finally {
+                        btn.disabled = false;
+                        btn.classList.remove('spinning');
                     }
+                });
+            }
 
-                    let timestampContainer = document.querySelector('.update-timestamp-container');
-                    if (!timestampContainer) {
-                        timestampContainer = document.createElement('div');
-                        timestampContainer.classList.add('update-timestamp-container');
-                        footer.parentNode.insertBefore(timestampContainer, footer);
-                    } else {
-                        timestampContainer.innerHTML = '';
-                    }
 
-                    const timestampText = document.createElement('span');
-                    timestampText.classList.add('timestamp-text');
-                    timestampText.innerHTML = `Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}`;
-                    timestampContainer.appendChild(timestampText);
 
-                    const refreshIcon = document.createElement('span');
-                    refreshIcon.classList.add('refresh-icon');
-                    refreshIcon.innerHTML = ' &#x21BB;';
-                    refreshIcon.title = 'Refresh data';
-                    timestampContainer.appendChild(refreshIcon);
 
-                    refreshIcon.addEventListener('click', () => {
-                        const refreshUrl = `/result?action=refresh`;
-                        window.location.href = refreshUrl;
-                    });
-                }
+
+
+
+
+
         } else {
             console.error('Failed to load semesters:', result.error);
         }

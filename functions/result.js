@@ -44,10 +44,17 @@ export async function onRequest(context) {
 
     // Handle requests
     if (action === 'getSemesters') {
-      const semesters = [...new Set(cache.map(r => r.semester))].filter(Boolean);
+      const semestersList = [...new Set(cache.map(r => r.semester))].filter(Boolean);
+      
+      // Format semesters to match origin API structure
+      const semesters = semestersList.map(sem => ({
+        value: sem,
+        label: sem
+      }));
+
       return new Response(JSON.stringify({
         status: 'success',
-        data: semesters
+        data: semesters  // Now returns array of {value, label} objects
       }), { headers });
     }
 

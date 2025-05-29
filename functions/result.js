@@ -60,9 +60,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({
         status: 'success',
         timestamp: new Date().toISOString(),
-        data: {
-          semesters: cachedData.semesters || testData.semesters
-        }
+        data: cachedData.semesters || testData.semesters  // Return array directly
       }), { headers: corsHeaders });
     }
 

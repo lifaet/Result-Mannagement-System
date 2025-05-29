@@ -19,25 +19,32 @@ export async function onRequest(context) {
   };
 
   try {
-    // Get parameters
     const url = new URL(request.url);
     const action = url.searchParams.get('action');
     const studentId = url.searchParams.get('id');
     const semester = url.searchParams.get('semester');
 
-    // Fetch from origin if cache is empty
+    // Fetch from origin and initialize cache
     if (!cache) {
       const SHEET_API = `https://script.google.com/macros/s/${env.SHEET_API}/exec`;
       const response = await fetch(`${SHEET_API}?action=AKfycbweayPsZkobJlPVTkAsRd7DuvZqjwE9nBBqhOvsHkZ3G2xzELiFA64dpcIlInAyyi_Cmg`);
       const data = await response.json();
-      if (data.status === 'success') {
-        cache = data.data;
+      
+      if (!data || data.status !== 'success' || !data.data) {
+        throw new Error('Failed to fetch data from origin');
       }
+      
+      cache = data.data;
+    }
+
+    // Verify cache exists before processing requests
+    if (!cache || !Array.isArray(cache)) {
+      throw new Error('Cache not properly initialized');
     }
 
     // Handle requests
     if (action === 'getSemesters') {
-      const semesters = [...new Set(cache.map(r => r.semester))];
+      const semesters = [...new Set(cache.map(r => r.semester))].filter(Boolean);
       return new Response(JSON.stringify({
         status: 'success',
         data: semesters
@@ -64,9 +71,14 @@ export async function onRequest(context) {
     }), { status: 400, headers });
 
   } catch (error) {
+    console.error('API Error:', error);
     return new Response(JSON.stringify({
       status: 'error',
-      message: error.message
-    }), { status: 500, headers });
+      message: error.message || 'Internal server error',
+      timestamp: new Date().toISOString()
+    }), { 
+      status: 500, 
+      headers 
+    });
   }
 }

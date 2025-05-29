@@ -24,26 +24,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 semesterSelect.appendChild(option);
             });
 
-            // Add timestamp from initial fetch
-            // if (result.lastUpdated) {
-            //     const footer = document.querySelector('footer');
-            //     const timestamp = document.createElement('div');
-            //     timestamp.classList.add('update-timestamp');
-            //     timestamp.innerHTML = `Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}`;
-            //     footer.parentNode.insertBefore(timestamp, footer);
-            // }
-
-            // Modified timestamp creation with refresh button
-            
             if (result.lastUpdated) {
                 const footer = document.querySelector('footer');
                 const timestampContainer = document.createElement('div');
                 timestampContainer.classList.add('update-timestamp');
                 timestampContainer.innerHTML = `
                     Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}
-                    <button id="refreshCache" class="refresh-btn">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                    <button id="refreshCache" class="refresh-btn">&#x21BB;</button>
                 `;
                 footer.parentNode.insertBefore(timestampContainer, footer);
 
@@ -80,14 +67,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     }
                 });
             }
-
-
-
-
-
-
-
-
 
         } else {
             console.error('Failed to load semesters:', result.error);

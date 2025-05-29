@@ -32,15 +32,16 @@ async function onRequest(context) {
     const studentId = url.searchParams.get('id');
     const semester = url.searchParams.get('semester');
 
-
-    // Handle force refresh
+    // Handle refresh action
     if (action === 'refresh') {
-      const updated = await initializeCache(context.env);
-      return successResponse({
-        updated,
-        lastUpdated: new Date(resultCache.lastUpdated).toISOString()
-      });
+      const refreshResult = await initializeCache(context.env);
+      return new Response(JSON.stringify({
+        status: refreshResult ? 'success' : 'error',
+        message: refreshResult ? 'Cache refreshed successfully' : 'Failed to refresh cache',
+        lastUpdated: refreshResult ? new Date(resultCache.lastUpdated).toISOString() : null
+      }), { headers: CORS_HEADERS });
     }
+
     // Cache refresh check
     if (Date.now() - resultCache.lastUpdated > 12 * 60 * 60 * 1000) {
       await initializeCache(context.env);

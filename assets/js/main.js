@@ -173,24 +173,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         `;
         resultDisplay.innerHTML = html;
     }
-
-    // Add timestamp fetch and display
-    try {
-        const response = await fetch(`${api}?action=refresh`);
-        const result = await response.json();
-        
-        if (result.status === 'success' && result.lastUpdated) {
-            const footer = document.querySelector('footer');
-            const timestamp = document.createElement('div');
-            timestamp.classList.add('update-timestamp');
-            timestamp.innerHTML = `Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}`;
-            
-            // Insert timestamp before footer
-            footer.parentNode.insertBefore(timestamp, footer);
-        }
-    } catch (error) {
-        console.error('Error fetching update timestamp:', error);
-    }
 });
 
 function searchAgain() {

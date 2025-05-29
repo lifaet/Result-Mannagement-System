@@ -12,11 +12,7 @@ const corsHeaders = {
 // Main request handler for Pages Functions
 export async function onRequest(context) {
   const { request, env } = context;
-  
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json'
-  };
+  const headers = corsHeaders;
 
   try {
     const url = new URL(request.url);
@@ -26,8 +22,7 @@ export async function onRequest(context) {
 
     // Fetch from origin and initialize cache
     if (!cache) {
-      const SHEET_API = `https://script.google.com/macros/s/${env.SHEET_API}/exec`;
-      const response = await fetch(`${SHEET_API}?action=AKfycbweayPsZkobJlPVTkAsRd7DuvZqjwE9nBBqhOvsHkZ3G2xzELiFA64dpcIlInAyyi_Cmg`);
+      const response = await fetch(`${env.SHEET_API}`);
       const data = await response.json();
       
       if (!data || data.status !== 'success' || !data.data) {
@@ -45,8 +40,6 @@ export async function onRequest(context) {
     // Handle requests
     if (action === 'getSemesters') {
       const semestersList = [...new Set(cache.map(r => r.semester))].filter(Boolean);
-      
-      // Format semesters to match origin API structure
       const semesters = semestersList.map(sem => ({
         value: sem,
         label: sem
@@ -54,7 +47,7 @@ export async function onRequest(context) {
 
       return new Response(JSON.stringify({
         status: 'success',
-        data: semesters  // Now returns array of {value, label} objects
+        data: semesters
       }), { headers });
     }
 
@@ -78,7 +71,6 @@ export async function onRequest(context) {
     }), { status: 400, headers });
 
   } catch (error) {
-    console.error('API Error:', error);
     return new Response(JSON.stringify({
       status: 'error',
       message: error.message || 'Internal server error',

@@ -25,13 +25,44 @@ document.addEventListener('DOMContentLoaded', async function () {
             });
 
             // Add timestamp from initial fetch
-            if (result.lastUpdated) {
-                const footer = document.querySelector('footer');
-                const timestamp = document.createElement('div');
-                timestamp.classList.add('update-timestamp');
-                timestamp.innerHTML = `Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}`;
-                footer.parentNode.insertBefore(timestamp, footer);
-            }
+            // if (result.lastUpdated) {
+            //     const footer = document.querySelector('footer');
+            //     const timestamp = document.createElement('div');
+            //     timestamp.classList.add('update-timestamp');
+            //     timestamp.innerHTML = `Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}`;
+            //     footer.parentNode.insertBefore(timestamp, footer);
+            // }
+                if (result.lastUpdated) {
+                    const footer = document.querySelector('footer');
+                    if (!footer) {
+                        return;
+                    }
+
+                    let timestampContainer = document.querySelector('.update-timestamp-container');
+                    if (!timestampContainer) {
+                        timestampContainer = document.createElement('div');
+                        timestampContainer.classList.add('update-timestamp-container');
+                        footer.parentNode.insertBefore(timestampContainer, footer);
+                    } else {
+                        timestampContainer.innerHTML = '';
+                    }
+
+                    const timestampText = document.createElement('span');
+                    timestampText.classList.add('timestamp-text');
+                    timestampText.innerHTML = `Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}`;
+                    timestampContainer.appendChild(timestampText);
+
+                    const refreshIcon = document.createElement('span');
+                    refreshIcon.classList.add('refresh-icon');
+                    refreshIcon.innerHTML = ' &#x21BB;';
+                    refreshIcon.title = 'Refresh data';
+                    timestampContainer.appendChild(refreshIcon);
+
+                    refreshIcon.addEventListener('click', () => {
+                        const refreshUrl = `YOUR_REFRESH_API_ENDPOINT`;
+                        window.location.href = refreshUrl;
+                    });
+                }
         } else {
             console.error('Failed to load semesters:', result.error);
         }
@@ -178,10 +209,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 function searchAgain() {
     // Clear the result display
     document.getElementById('resultDisplay').innerHTML = '';
-    
+
     // Reset the form
     document.getElementById('resultForm').reset();
-    
+
     // Scroll back to the search form
     document.querySelector('.search-container').scrollIntoView({ behavior: 'smooth' });
 }

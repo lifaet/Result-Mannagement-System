@@ -1,16 +1,3 @@
-// Mock data for testing (remove in production)
-const testData = {
-  semesters: ['1/1', '1/2', '2/1', '2/2', '3/1', '3/2', '4/1', '4/2'],
-  results: [
-    {
-      id: "CS2301002",
-      name: "Test Student",
-      semester: "1/1",
-      // ... other result data
-    }
-  ]
-};
-
 // Cache storage
 let cache = null;
 

@@ -32,16 +32,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 timestamp.innerHTML = `Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}`;
                 footer.parentNode.insertBefore(timestamp, footer);
             }
-
-            // After displaying timestamp, try to refresh in background
-            fetch(`${api}?action=refresh`).then(res => res.json()).then(refreshResult => {
-                if (refreshResult.status === 'success' && refreshResult.lastUpdated) {
-                    const existingTimestamp = document.querySelector('.update-timestamp');
-                    if (existingTimestamp) {
-                        existingTimestamp.innerHTML = `Last synchronized: ${new Date(refreshResult.lastUpdated).toLocaleString()}`;
-                    }
-                }
-            }).catch(() => {/* ignore refresh errors */});
         } else {
             console.error('Failed to load semesters:', result.error);
         }

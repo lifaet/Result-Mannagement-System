@@ -13,10 +13,10 @@ let resultCache = {
 
 // Helper functions
 async function initializeCache(env) {
-  const response = await fetch(env.SHEET_API);
+  const response = await fetch(env.SHEET_API + '?action=getAllResults');
   const data = await response.json();
   
-  if (!data?.status === 'success' || !data?.data) {
+  if (data?.status !== 'success' || !data?.data) { // Fixed condition
     throw new Error('Invalid response from origin');
   }
   
@@ -27,16 +27,16 @@ async function initializeCache(env) {
 
 async function checkAndUpdateCache(env) {
   try {
-    const response = await fetch(env.SHEET_API);
+    const response = await fetch(env.SHEET_API + '?action=getAllResults');
     const data = await response.json();
     
-    if (!data?.status === 'success' || !data?.data) {
+    if (data?.status !== 'success' || !data?.data) { // Fixed condition
       return false;
     }
 
     const newHash = await generateHash(data.data);
-
-    // Update cache if hash differs
+    
+    // Always update if hash is different
     if (newHash !== resultCache.hash) {
       resultCache.data = data.data;
       resultCache.lastUpdated = Date.now();
@@ -92,16 +92,9 @@ function errorResponse(message, status = 400) {
 // Main request handler
 export async function onRequest(context) {
   try {
-    // Initialize or update cache
+    // Initialize cache if empty
     if (!resultCache.data) {
       await initializeCache(context.env);
-    } else if (Date.now() - resultCache.lastUpdated > 60 * 1000) {
-      // Only attempt update if more than 1 minute has passed
-      await checkAndUpdateCache(context.env);
-    }
-
-    if (!Array.isArray(resultCache.data)) {
-      throw new Error('Invalid cache state');
     }
 
     const url = new URL(context.request.url);
@@ -109,18 +102,19 @@ export async function onRequest(context) {
     const studentId = url.searchParams.get('id');
     const semester = url.searchParams.get('semester');
 
-    // Handle force refresh
+    // Check cache age and update if needed (only once per request)
+    const cacheAge = Date.now() - resultCache.lastUpdated;
+    if (cacheAge > 60 * 1000) {
+      await checkAndUpdateCache(context.env);
+    }
+
+    // Handle requests
     if (action === 'refresh') {
       const updated = await checkAndUpdateCache(context.env);
       return successResponse({
         updated,
         lastUpdated: new Date(resultCache.lastUpdated).toISOString()
       });
-    }
-
-    // Check for updates on regular requests (every 1 minutes)
-    if (Date.now() - resultCache.lastUpdated > 60 * 1000) {
-      await checkAndUpdateCache(context.env);
     }
 
     if (action === 'getSemesters') {

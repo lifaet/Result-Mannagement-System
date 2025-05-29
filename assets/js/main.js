@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                             // Update timestamp
                             const timestamp = btn.parentElement;
                             timestamp.innerHTML = `
-                                Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}
+                                Last sync: ${new Date(result.lastUpdated).toLocaleString()}
                                 <button id="refreshCache" class="refresh-btn">
                                     <i class="fas fa-sync-alt"></i>
                                 </button>
@@ -63,7 +63,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                         console.error('Error refreshing cache:', error);
                     } finally {
                         btn.disabled = false;
-                        btn.classList.remove('spinning');
                     }
                 });
             }

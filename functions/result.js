@@ -1,114 +1,142 @@
-export async function onRequest(context) {
-  try {
-    const scriptId = context.env.SHEET_API
-    if (!scriptId) throw new Error('Missing SHEET_API environment variable')
+// Variable to store all results
+let cachedData = {
+  lastFetched: null,
+  results: null,
+  semesters: null
+};
 
-    const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`
-    const { request } = context
-    const url = new URL(request.url)
-    const cache = caches.default
-    const action = url.searchParams.get('action')
+// Function to fetch fresh data from Google API
+async function fetchFromOrigin(env) {
+  const scriptId = env.SHEET_API;
+  if (!scriptId) throw new Error('Missing SHEET_API environment variable');
+  
+  const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`;
+  
+  // Fetch all data in parallel
+  const [semestersRes, resultsRes] = await Promise.all([
+    fetch(`${SHEET_API}?action=getSemesters`),
+    fetch(`${SHEET_API}?action=getAllResults`)
+  ]);
 
-    // Create cache key based on URL
-    const cacheKey = new Request(request.url)
-    
-    // Try cache first
-    const cachedResponse = await cache.match(cacheKey)
-    if (cachedResponse) {
-      // Update cache in background
-      context.waitUntil(
-        fetch(`${SHEET_API}?${url.searchParams.toString()}`).then(response => 
-          cache.put(cacheKey, response)
-        ).catch(console.error)
-      )
-      return cachedResponse
-    }
+  const [semesters, results] = await Promise.all([
+    semestersRes.json(),
+    resultsRes.json()
+  ]);
 
-    // If not in cache, fetch fresh
-    const response = await fetch(`${SHEET_API}?${url.searchParams.toString()}`)
-    const newResponse = new Response(response.body, response)
-    
-    // Cache the response
-    await cache.put(cacheKey, newResponse.clone())
-    
-    return newResponse
-
-  } catch (error) {
-    return new Response(JSON.stringify({
-      status: 'error',
-      error: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+  if (semesters.status === 'success' && results.status === 'success') {
+    cachedData = {
+      lastFetched: new Date().toISOString(),
+      semesters: semesters.data.semesters,
+      results: results.data
+    };
+    return true;
   }
+  return false;
 }
 
-// Preload function to cache semesters and all results
-export async function preloadCache(context) {
-  try {
-    const scriptId = context.env.SHEET_API
-    if (!scriptId) throw new Error('Missing SHEET_API environment variable')
+export default {
+  // Fetch fresh data every 5 minutes
+  async scheduled(event, env, ctx) {
+    await fetchFromOrigin(env);
+  },
 
-    const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`
-    const { request } = context
-    const url = new URL(request.url)
-    const cache = caches.default
+  async fetch(request, env, ctx) {
+    try {
+      const url = new URL(request.url);
+      const action = url.searchParams.get('action');
+      const studentId = url.searchParams.get('id');
+      const semester = url.searchParams.get('semester');
 
-    const action = url.searchParams.get('action')
+      const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Content-Type': 'application/json'
+      };
 
-    // Add preload functionality
-    if (action === 'preload') {
-      console.log('Starting preload...')
-      
-      // First cache semesters
-      const semesterResponse = await fetch(`${SHEET_API}?action=getSemesters`)
-      const semesterData = await semesterResponse.json()
-      
-      if (semesterData.status === 'success') {
-        // Cache semester list
-        const semesterCacheKey = new Request(`${SHEET_API}?action=getSemesters`)
-        await cache.put(semesterCacheKey, new Response(JSON.stringify(semesterData), {
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'max-age=30, stale-while-revalidate=60'
-          }
-        }))
-        
-        // Get all results for each semester
-        const allResults = await fetch(`${SHEET_API}?action=${AllDataAPI}`)
-        const resultsData = await allResults.json()
-        
-        if (resultsData.status === 'success') {
-          // Cache each result
-          for (const result of resultsData.data) {
-            const resultCacheKey = new Request(`${SHEET_API}?id=${result.id}&semester=${result.semester}`)
-            await cache.put(resultCacheKey, new Response(JSON.stringify({
-              status: 'success',
-              data: result
-            }), {
-              headers: {
-                'Content-Type': 'application/json',
-                'Cache-Control': 'max-age=30, stale-while-revalidate=60'
-              }
-            }))
-            console.log(`Cached result for: ${result.id}`)
-          }
-        }
-        
+      // Handle CORS preflight
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { headers: corsHeaders });
+      }
+
+      // Initial data fetch if not cached
+      if (!cachedData.results) {
+        await fetchFromOrigin(env);
+      }
+
+      // Handle different API endpoints
+      if (action === 'getSemesters') {
         return new Response(JSON.stringify({
           status: 'success',
-          message: 'Cache preloaded successfully'
-        }))
+          timestamp: new Date().toISOString(),
+          data: {
+            semesters: cachedData.semesters
+          }
+        }), { headers: corsHeaders });
       }
+
+      if (action === 'getAllResults') {
+        return new Response(JSON.stringify({
+          status: 'success',
+          timestamp: new Date().toISOString(),
+          data: cachedData.results
+        }), { headers: corsHeaders });
+      }
+
+      if (studentId && semester) {
+        const result = cachedData.results.find(r => 
+          r.id === studentId && r.semester === semester
+        );
+
+        if (!result) {
+          return new Response(JSON.stringify({
+            status: 'error',
+            timestamp: new Date().toISOString(),
+            message: 'Result not found'
+          }), { 
+            status: 404,
+            headers: corsHeaders 
+          });
+        }
+
+        return new Response(JSON.stringify({
+          status: 'success',
+          timestamp: new Date().toISOString(),
+          data: result
+        }), { headers: corsHeaders });
+      }
+
+      // Force refresh cache
+      if (action === 'refresh') {
+        const success = await fetchFromOrigin(env);
+        return new Response(JSON.stringify({
+          status: success ? 'success' : 'error',
+          timestamp: new Date().toISOString(),
+          message: success ? 'Cache refreshed' : 'Failed to refresh cache',
+          lastFetched: cachedData.lastFetched
+        }), { headers: corsHeaders });
+      }
+
+      return new Response(JSON.stringify({
+        status: 'error',
+        message: 'Invalid request'
+      }), { 
+        status: 400,
+        headers: corsHeaders 
+      });
+
+    } catch (error) {
+      return new Response(JSON.stringify({
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        message: error.message
+      }), {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
     }
-  } catch (error) {
-    return new Response(JSON.stringify({
-      status: 'error',
-      error: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
   }
-}
+};

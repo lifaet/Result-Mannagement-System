@@ -7,31 +7,61 @@ let cachedData = {
 
 // Function to fetch fresh data from Google API
 async function fetchFromOrigin(env) {
-  const scriptId = env.SHEET_API;
-  if (!scriptId) throw new Error('Missing SHEET_API environment variable');
-  
-  const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`;
-  
-  // Fetch all data in parallel
-  const [semestersRes, resultsRes] = await Promise.all([
-    fetch(`${SHEET_API}?action=getSemesters`),
-    fetch(`${SHEET_API}?action=getAllResults`)
-  ]);
-
-  const [semesters, results] = await Promise.all([
-    semestersRes.json(),
-    resultsRes.json()
-  ]);
-
-  if (semesters.status === 'success' && results.status === 'success') {
-    cachedData = {
-      lastFetched: new Date().toISOString(),
-      semesters: semesters.data.semesters,
-      results: results.data
+  try {
+    const scriptId = env.SHEET_API;
+    if (!scriptId) throw new Error('Missing SHEET_API environment variable');
+    
+    const SHEET_API = `https://script.google.com/macros/s/${scriptId}/exec`;
+    
+    // Add logging for debugging
+    console.log('Fetching from origin:', SHEET_API);
+    
+    // Add proper fetch options
+    const fetchOptions = {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
     };
-    return true;
+
+    // Fetch all data in parallel with timeout
+    const [semestersRes, resultsRes] = await Promise.all([
+      fetch(`${SHEET_API}?action=getSemesters`, fetchOptions),
+      fetch(`${SHEET_API}?action=getAllResults`, fetchOptions)
+    ]);
+
+    // Check response status
+    if (!semestersRes.ok || !resultsRes.ok) {
+      throw new Error('API response not OK');
+    }
+
+    // Verify content type
+    const semesterContentType = semestersRes.headers.get('content-type');
+    const resultsContentType = resultsRes.headers.get('content-type');
+    
+    if (!semesterContentType?.includes('application/json') || 
+        !resultsContentType?.includes('application/json')) {
+      throw new Error('Invalid content type received');
+    }
+
+    const [semesters, results] = await Promise.all([
+      semestersRes.json(),
+      resultsRes.json()
+    ]);
+
+    if (semesters.status === 'success' && results.status === 'success') {
+      cachedData = {
+        lastFetched: new Date().toISOString(),
+        semesters: semesters.data.semesters,
+        results: results.data
+      };
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error fetching from origin:', error);
+    throw error;
   }
-  return false;
 }
 
 export default {
@@ -41,18 +71,16 @@ export default {
   },
 
   async fetch(request, env, ctx) {
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Content-Type': 'application/json'
+    };
+
     try {
       const url = new URL(request.url);
-      const action = url.searchParams.get('action');
-      const studentId = url.searchParams.get('id');
-      const semester = url.searchParams.get('semester');
-
-      const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json'
-      };
+      console.log('Request URL:', url.toString());
 
       // Handle CORS preflight
       if (request.method === 'OPTIONS') {
@@ -61,10 +89,15 @@ export default {
 
       // Initial data fetch if not cached
       if (!cachedData.results) {
+        console.log('Cache miss, fetching from origin');
         await fetchFromOrigin(env);
       }
 
       // Handle different API endpoints
+      const action = url.searchParams.get('action');
+      const studentId = url.searchParams.get('id');
+      const semester = url.searchParams.get('semester');
+
       if (action === 'getSemesters') {
         return new Response(JSON.stringify({
           status: 'success',
@@ -126,16 +159,16 @@ export default {
       });
 
     } catch (error) {
+      console.error('Worker error:', error);
       return new Response(JSON.stringify({
         status: 'error',
         timestamp: new Date().toISOString(),
-        message: error.message
+        message: error.message || 'Internal server error',
+        type: error.name,
+        path: request.url
       }), {
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
+        headers: corsHeaders
       });
     }
   }

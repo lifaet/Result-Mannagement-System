@@ -10,7 +10,7 @@ let resultCache = {
 };
 
 async function initializeCache(env) {
-  const response = await fetch(env.SHEET_API + '?action=getAllResults');
+  const response = await fetch(env.SHEET_API);
   const data = await response.json();
   if (data?.status === 'success' && Array.isArray(data.data)) {
     resultCache.data = data.data;

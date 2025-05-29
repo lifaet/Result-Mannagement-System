@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const timestampContainer = document.createElement('div');
                 timestampContainer.classList.add('update-timestamp');
                 timestampContainer.innerHTML = `
-                    Last synchronized: ${new Date(result.lastUpdated).toLocaleString()}
+                    Last sync: ${new Date(result.lastUpdated).toLocaleString()}
                     <button id="refreshCache" class="refresh-btn">&#x21BB;</button>
                 `;
                 footer.parentNode.insertBefore(timestampContainer, footer);
@@ -50,9 +50,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                             const timestamp = btn.parentElement;
                             timestamp.innerHTML = `
                                 Last sync: ${new Date(result.lastUpdated).toLocaleString()}
-                                <button id="refreshCache" class="refresh-btn">
-                                    <i class="fas fa-sync-alt"></i>
-                                </button>
+                                <button id="refreshCache" class="refresh-btn">&#x21BB;</button>
                             `;
                             // Reattach event listener to new button
                             document.getElementById('refreshCache').addEventListener('click', arguments.callee);
@@ -63,6 +61,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         console.error('Error refreshing cache:', error);
                     } finally {
                         btn.disabled = false;
+                        btn.classList.remove('spinning');
                     }
                 });
             }

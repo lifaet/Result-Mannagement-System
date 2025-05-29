@@ -60,7 +60,11 @@ function findStudentResult(results, studentId, semester) {
 // Response handlers
 function successResponse(data) {
   return new Response(
-    JSON.stringify({ status: 'success', data }), 
+    JSON.stringify({ 
+      status: 'success', 
+      data,
+      lastUpdated: new Date(resultCache.lastUpdated).toISOString()
+    }), 
     { headers: CORS_HEADERS }
   );
 }
@@ -93,8 +97,8 @@ export async function onRequest(context) {
       });
     }
 
-    // Check for updates on regular requests (every 5 minutes)
-    if (Date.now() - resultCache.lastUpdated > 5 * 60 * 1000) {
+    // Check for updates on regular requests (every 1 minutes)
+    if (Date.now() - resultCache.lastUpdated > 60 * 1000) {
       await checkAndUpdateCache(context.env);
     }
 

@@ -11,12 +11,8 @@ const testData = {
   ]
 };
 
-// Global cache variable
-const cachedData = {
-  lastFetched: null,
-  results: null,
-  semesters: null
-};
+// Cache storage
+let cache = null;
 
 // Standard response headers
 const corsHeaders = {
@@ -29,130 +25,61 @@ const corsHeaders = {
 // Main request handler for Pages Functions
 export async function onRequest(context) {
   const { request, env } = context;
+  
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'application/json'
+  };
 
   try {
+    // Get parameters
     const url = new URL(request.url);
-    
-    // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
-    }
-
-    // Get request parameters
     const action = url.searchParams.get('action');
     const studentId = url.searchParams.get('id');
     const semester = url.searchParams.get('semester');
 
-    // Use test data if SHEET_API is not configured
-    if (!env.SHEET_API) {
-      console.warn('Using test data - SHEET_API not configured');
-      cachedData.semesters = testData.semesters;
-      cachedData.results = testData.results;
-    }
-    
-    // Initialize cache if needed
-    if (!cachedData.results) {
-      await fetchFromOrigin(env);
+    // Fetch from origin if cache is empty
+    if (!cache) {
+      const SHEET_API = `https://script.google.com/macros/s/${env.SHEET_API}/exec`;
+      const response = await fetch(`${SHEET_API}?action=getAllResults`);
+      const data = await response.json();
+      if (data.status === 'success') {
+        cache = data.data;
+      }
     }
 
-    // Handle different endpoints
+    // Handle requests
     if (action === 'getSemesters') {
+      const semesters = [...new Set(cache.map(r => r.semester))];
       return new Response(JSON.stringify({
         status: 'success',
-        timestamp: new Date().toISOString(),
-        data: cachedData.semesters || testData.semesters  // Return array directly
-      }), { headers: corsHeaders });
-    }
-
-    if (action === 'getAllResults') {
-      return new Response(JSON.stringify({
-        status: 'success',
-        timestamp: new Date().toISOString(),
-        data: cachedData.results || testData.results
-      }), { headers: corsHeaders });
+        data: semesters
+      }), { headers });
     }
 
     if (studentId && semester) {
-      const results = cachedData.results || testData.results;
-      const result = results.find(r => 
-        r.id === studentId && r.semester === semester
-      );
-
+      const result = cache.find(r => r.id === studentId && r.semester === semester);
       if (!result) {
         return new Response(JSON.stringify({
           status: 'error',
-          timestamp: new Date().toISOString(),
           message: 'Result not found'
-        }), { 
-          status: 404,
-          headers: corsHeaders 
-        });
+        }), { status: 404, headers });
       }
-
       return new Response(JSON.stringify({
         status: 'success',
-        timestamp: new Date().toISOString(),
         data: result
-      }), { headers: corsHeaders });
+      }), { headers });
     }
 
-    // Handle invalid requests
     return new Response(JSON.stringify({
       status: 'error',
       message: 'Invalid request'
-    }), { 
-      status: 400,
-      headers: corsHeaders 
-    });
+    }), { status: 400, headers });
 
   } catch (error) {
-    console.error('Worker error:', error);
     return new Response(JSON.stringify({
       status: 'error',
-      timestamp: new Date().toISOString(),
-      message: error.message || 'Internal server error',
-      path: request.url
-    }), {
-      status: 500,
-      headers: corsHeaders
-    });
-  }
-}
-
-// Helper function to fetch from origin
-async function fetchFromOrigin(env) {
-  if (!env.SHEET_API) return false;
-  
-  try {
-    const SHEET_API = `https://script.google.com/macros/s/${env.SHEET_API}/exec`;
-    const fetchOptions = {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    };
-
-    const [semestersRes, resultsRes] = await Promise.all([
-      fetch(`${SHEET_API}?action=getSemesters`, fetchOptions),
-      fetch(`${SHEET_API}?action=getAllResults`, fetchOptions)
-    ]);
-
-    if (!semestersRes.ok || !resultsRes.ok) {
-      throw new Error('API response not OK');
-    }
-
-    const [semesters, results] = await Promise.all([
-      semestersRes.json(),
-      resultsRes.json()
-    ]);
-
-    if (semesters.status === 'success' && results.status === 'success') {
-      cachedData.lastFetched = new Date().toISOString();
-      cachedData.semesters = semesters.data.semesters;
-      cachedData.results = results.data;
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('Error fetching from origin:', error);
-    return false;
+      message: error.message
+    }), { status: 500, headers });
   }
 }

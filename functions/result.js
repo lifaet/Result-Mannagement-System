@@ -12,23 +12,34 @@ let resultCache = {
 async function initializeCache(env) {
   const response = await fetch(env.SHEET_API + '?action=getAllResults');
   const data = await response.json();
-  if (data?.status === 'success' && data?.data) {
+  if (data?.status === 'success' && Array.isArray(data.data)) {
     resultCache.data = data.data;
     resultCache.lastUpdated = Date.now();
+    return true;
   }
+  return false;
 }
 
 async function onRequest(context) {
   try {
-    if (!resultCache.data) await initializeCache(context.env);
+    // Initial cache load
+    if (!resultCache.data && !(await initializeCache(context.env))) {
+      throw new Error('Failed to initialize cache');
+    }
 
     const url = new URL(context.request.url);
     const action = url.searchParams.get('action');
     const studentId = url.searchParams.get('id');
     const semester = url.searchParams.get('semester');
 
+    // Cache refresh check
     if (Date.now() - resultCache.lastUpdated > 60000) {
       await initializeCache(context.env);
+    }
+
+    // Ensure we have valid data
+    if (!Array.isArray(resultCache.data)) {
+      throw new Error('Invalid cache state');
     }
 
     if (action === 'getSemesters') {

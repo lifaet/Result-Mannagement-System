@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     timestampContainer.appendChild(refreshIcon);
 
                     refreshIcon.addEventListener('click', () => {
-                        const refreshUrl = `YOUR_REFRESH_API_ENDPOINT`;
+                        const refreshUrl = `/result?action=refresh`;
                         window.location.href = refreshUrl;
                     });
                 }

@@ -32,8 +32,13 @@ async function onRequest(context) {
     const studentId = url.searchParams.get('id');
     const semester = url.searchParams.get('semester');
 
+
+    // Handle force refresh
+    if (action === 'refresh') {
+      await initializeCache(context.env);
+    }
     // Cache refresh check
-    if (Date.now() - resultCache.lastUpdated > 12*60*60*1000) {
+    if (Date.now() - resultCache.lastUpdated > 12 * 60 * 60 * 1000) {
       await initializeCache(context.env);
     }
 

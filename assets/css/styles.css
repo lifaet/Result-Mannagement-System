@@ -442,8 +442,6 @@ select:focus {
     text-align: center;
     color: #666;
     font-size: 0.9em;
-    padding: 20px 0;
-    margin: 20px 0;
     border-top: 1px solid #eee;
     font-style: italic;
 }

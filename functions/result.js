@@ -33,7 +33,7 @@ async function onRequest(context) {
     const semester = url.searchParams.get('semester');
 
     // Cache refresh check
-    if (Date.now() - resultCache.lastUpdated > 60000) {
+    if (Date.now() - resultCache.lastUpdated > 60*60*1000) {
       await initializeCache(context.env);
     }
 

@@ -4,22 +4,23 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json'
 };
 
-let resultCache = null;
+let resultCache = {
+  data: null,
+  lastUpdated: null
+};
 
 async function initializeCache(env) {
   const response = await fetch(env.SHEET_API + '?action=getAllResults');
   const data = await response.json();
   if (data?.status === 'success' && data?.data) {
-    resultCache = {
-      data: data.data,
-      lastUpdated: Date.now()
-    };
+    resultCache.data = data.data;
+    resultCache.lastUpdated = Date.now();
   }
 }
 
 async function onRequest(context) {
   try {
-    if (!resultCache) await initializeCache(context.env);
+    if (!resultCache.data) await initializeCache(context.env);
 
     const url = new URL(context.request.url);
     const action = url.searchParams.get('action');

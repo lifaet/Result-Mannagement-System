@@ -403,6 +403,9 @@ select:focus {
         overflow-wrap: break-word;
         word-wrap: break-word;
     }
+    .update-timestamp{
+        display: none;
+    }
 }
 
 /* Responsive Design */

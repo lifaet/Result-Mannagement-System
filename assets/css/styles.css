@@ -385,6 +385,9 @@ select:focus {
         display: none;
     }
 
+    .update-timestamp{
+        display: none !important;
+    }
     /* Prevent page breaks inside elements */
     .result-header,
     .student-info-table,
@@ -402,9 +405,6 @@ select:focus {
     * {
         overflow-wrap: break-word;
         word-wrap: break-word;
-    }
-    .update-timestamp{
-        display: none !important;
     }
 }
 

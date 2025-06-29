@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const timestampContainer = document.createElement('div');
                 timestampContainer.classList.add('update-timestamp');
                 timestampContainer.innerHTML = `
-                    Last sync: ${new Date(result.lastUpdated).toLocaleString()}
+                    Cache last synced cache: ${new Date(result.lastUpdated).toLocaleString()}
                     <button id="refreshCache" class="refresh-btn">&#x21BB;</button>
                 `;
                 footer.parentNode.insertBefore(timestampContainer, footer);
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                             // Update timestamp
                             const timestamp = btn.parentElement;
                             timestamp.innerHTML = `
-                                Last sync: ${new Date(result.lastUpdated).toLocaleString()}
+                                Cache last synced: ${new Date(result.lastUpdated).toLocaleString()}
                                 <button id="refreshCache" class="refresh-btn">&#x21BB;</button>
                             `;
                             // Reattach event listener to new button

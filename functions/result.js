@@ -68,7 +68,7 @@ async function onRequest(context) {
       const result = resultCache.data.find(r => r.id === studentId && r.semester === semester);
       if (!result) return new Response(JSON.stringify({
         status: 'error',
-        message: 'Result not found'
+        error: 'Result not found'
       }), { status: 404, headers: CORS_HEADERS });
 
       return new Response(JSON.stringify({
@@ -80,13 +80,13 @@ async function onRequest(context) {
 
     return new Response(JSON.stringify({
       status: 'error',
-      message: 'Invalid request'
+      error: 'Invalid request'
     }), { status: 400, headers: CORS_HEADERS });
 
   } catch (error) {
     return new Response(JSON.stringify({
       status: 'error',
-      message: error.message
+      error: error.message
     }), { status: 500, headers: CORS_HEADERS });
   }
 }
